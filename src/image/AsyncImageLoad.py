@@ -51,6 +51,7 @@ def update():
     if not img_buffer_queue.empty():
         url, buff = img_buffer_queue.get()
         image = pygame.image.load(buff)
+        image.convert()
         callbacks = on_load_callbacks.pop(url, None)
         if callbacks:
             for callback in callbacks:

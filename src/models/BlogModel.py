@@ -17,7 +17,7 @@ class BlogModel(object):
     def getNumPosts(self):
         return self.nNumPosts
 
-    def getPosts(self, start=0, end=19):
+    def getPosts(self, start=0, end=19, typ='photo'):
         n = 0
         N = (end + 1) - start
         posts = []
@@ -26,8 +26,10 @@ class BlogModel(object):
             ps = self.client.posts(self.sAccount, limit=grab, offset= (start + n))
 
             for p in ps['posts']:
-                posts.append(PostModel.MakePostModel(p))
+                if typ == None or p['type'] == typ:
+                    posts.append(PostModel.MakePostModel(p))
+                    n += 1
 
-            n += len(ps)
 
+        print 'retrieved ' + str(len(posts))
         return posts

@@ -29,34 +29,31 @@ class App(object):
         self.mainLoop()
     
     def mainLoop(self):
+        try:
+            while not self.done:
+                for e in pygame.event.get():
+                    if e.type == QUIT:
+                        self.done = True
+                        break
+                    elif e.type == KEYDOWN and e.key == pygame.K_ESCAPE:
+                       self.done = True
+                    elif e.type == KEYDOWN or e.type == KEYUP:
+                        self.rScreenManager.onKeyboardEvent(e)
+                    elif e.type  == MOUSEMOTION or e.type  ==  MOUSEBUTTONDOWN or e.type == MOUSEBUTTONUP:
+                        self.rScreenManager.onMouseEvent(e)
 
-        while not self.done:
-            for e in pygame.event.get():
-                if e.type == QUIT:
-                    self.tearDown()
-                    self.done = True
-                    break
-                elif e.type == KEYDOWN and e.key == pygame.K_ESCAPE:
-                   self.done = True
-                elif e.type == KEYDOWN or e.type == KEYUP:
-                    self.rScreenManager.onKeyboardEvent(e)
-                elif e.type  == MOUSEMOTION or e.type  ==  MOUSEBUTTONDOWN or e.type == MOUSEBUTTONUP:
-                    self.rScreenManager.onMouseEvent(e)
+                if not self.done:
+                    t = get_ticks()
+                    if self.nLastUpdate + self.nTickRate < t:
+                        dT = t - self.nLastUpdate
 
-            if not self.done:
-                t = get_ticks()
-                if self.nLastUpdate + self.nTickRate < t:
-                    dT = t - self.nLastUpdate
+                        AsyncImageLoad.update()
+                        
+                        self.rScreenManager.onTick(dT)
 
-                    AsyncImageLoad.update()
-                    
-                    self.rScreenManager.onTick(dT)
-
-                    self.nLastUpdate = t
-                    
-                    pygame.display.update()
-
-        self.tearDown()
+                        self.nLastUpdate = t
+        finally:
+            self.tearDown()
 
     def tearDown(self):
         AsyncImageLoad.stop()

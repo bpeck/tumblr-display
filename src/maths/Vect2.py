@@ -1,13 +1,33 @@
 import math
 
-class Vect2:
+class Vect2(object):
     def __init__(self, d):
-        self.d = list(d)
+        if isinstance(d, Vect2):
+            self.d = [d.x, d.y]
+        else:
+            self.d = [float(d[0]), float(d[1])]
     
     def __getitem__(self, n):
         return self.d[n]
+
     def __setitem__(self, index, value):
         self.d[index] = value
+
+    @property
+    def x(self):
+        return self.d[0]
+
+    @property
+    def y(self):
+        return self.d[1]
+
+    @x.setter
+    def x(self, val):
+        self.d[0] = val
+
+    @y.setter
+    def y(self, val):
+        self.d[1] = val
 
     def __add__(self, v):
         return Vect2((self.d[0]+v.d[0], self.d[1]+v.d[1]))
@@ -16,7 +36,7 @@ class Vect2:
         return Vect2((self.d[0]-v.d[0], self.d[1]-v.d[1]))
         
     def __mul__(self, v):
-        if v.__class__ == Vect2: # dot product
+        if isinstance(v, Vect2): # dot product
             return self.d[0]*v.d[0] + self.d[1]*v.d[1]
         return Vect2((self.d[0]*v, self.d[1]*v))
         

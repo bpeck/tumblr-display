@@ -1,3 +1,4 @@
+from anim import AnimManager
 
 class Screen(object):
     def __init__(self):
@@ -9,6 +10,8 @@ class Screen(object):
         return self.sName
 
     def onTick(self, rDisplayScreen, dT):
+        AnimManager.update(dT)
+
         for drawable in self.tDrawables:
             drawable.draw(rDisplayScreen)
         

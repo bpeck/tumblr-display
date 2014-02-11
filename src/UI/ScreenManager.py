@@ -1,3 +1,4 @@
+import pygame.display
 
 class ScreenManager(object):
     def __init__(self, rDisplayScreen):
@@ -5,8 +6,12 @@ class ScreenManager(object):
         self.rDisplayScreen = rDisplayScreen
 
     def onTick(self, dT):
+        self.rDisplayScreen.fill((0,0,0,0))
+
         for screen in self.tScreens:
             screen.onTick(self.rDisplayScreen, dT)
+
+        pygame.display.update()
 
     def onMouseEvent(self, event):
         for screen in self.tScreens:
