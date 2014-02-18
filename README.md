@@ -6,6 +6,7 @@
 <ul>
 <li>pygame</li>
 <li>pytumblr</li>
+<li>Python Image Library (PIL)</li>
 </ul>
 
 <h2>Setup</h2>
