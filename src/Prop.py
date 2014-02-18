@@ -30,7 +30,7 @@ class Prop(Sprite, Drawable):
 
     def getWorldPos(self):
         if self.rParent:
-            return self.rPos + self.rParent.rPos
+            return self.rPos + self.rParent.getWorldPos()
         else:
             return self.rPos
 

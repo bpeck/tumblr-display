@@ -8,5 +8,6 @@ class BlogCrawlController(object):
     def update(self, dT):
         self.t = self.t - dT
         if self.t <= 0:
-            self.view.incPost()
+            if self.view.initialized:
+                self.view.incPost()
             self.t = self.period

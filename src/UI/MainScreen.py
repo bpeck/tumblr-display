@@ -12,6 +12,8 @@ class MainScreen(Screen):
 
         client = pytumblr.TumblrRestClient(Settings.OAUTH_CONSUMER, Settings.SECRET)
 
+        print "created tumblr client"
+
         self.rModel = BlogModel(client, 'dinakelberman')
         self.rView = MultiPhotoView(self.rModel)
         self.rController = BlogCrawlController(self.rView)
