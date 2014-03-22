@@ -10,8 +10,7 @@ class AnimDriver(object):
         self.obj = obj
         self.attr = attr
         self.ease_func = ease_func
-
-        AnimManager.addDriver(self)
+        self.done = False
 
     def update(self, dT):
         value = self.ease_func(self.t, self.start, self.delta, self.total_time)
@@ -34,6 +33,9 @@ class Vect2AnimDriver(AnimDriver):
     def update(self, dT):
         new_x = self.ease_func(self.t, self.start.x, self.delta.x, self.total_time)
         new_y = self.ease_func(self.t, self.start.y, self.delta.y, self.total_time)
+
+        if self.start.y < 0:
+            print str(new_x) + ', ' + str(new_y)
 
         self.obj.x = new_x
         self.obj.y = new_y

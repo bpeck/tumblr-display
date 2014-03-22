@@ -13,7 +13,7 @@ class Screen(object):
         AnimManager.update(dT)
 
         for drawable in self.tDrawables:
-            drawable.draw(rDisplayScreen)
+            drawable.draw(rDisplayScreen, dT)
         
         for controller in self.tControllers:
             controller.update(dT)

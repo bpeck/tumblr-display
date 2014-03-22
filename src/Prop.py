@@ -36,7 +36,7 @@ class Prop(Sprite, Drawable):
 
     def move(self, dx, dy, t, ease_func = Ease.linear):
         dest = self.rPos + Vect2((dx, dy))
-        Vect2AnimDriver(self.rPos, dest, t, ease_func)
+        return Vect2AnimDriver(self.rPos, dest, t, ease_func)
 
     def moveTo(self, x, y, t, ease_func = Ease.linear):
-        Vect2AnimDriver(self.rPos, Vect2((x, y)), t, ease_func)
+        return Vect2AnimDriver(self.rPos, Vect2((x, y)), t, ease_func)

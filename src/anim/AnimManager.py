@@ -8,6 +8,7 @@ def update(dT):
             remove.append(driver)
 
     for driver in remove:
+        driver.done = True
         drivers.remove(driver)
 
 def addDriver(driver):

@@ -2,12 +2,12 @@ class BlogCrawlController(object):
     
     def __init__(self, view):
         self.view = view
-        self.period = 2000
+        self.period = (view.SCROLL_SPEED * 1000) + (view.DISPLAY_SPEED * 1000)
         self.t = self.period
 
     def update(self, dT):
-        self.t = self.t - dT
+        if self.view.initialized:
+            self.t -= dT
         if self.t <= 0:
-            if self.view.initialized:
-                self.view.incPost()
+            self.view.incPost()
             self.t = self.period

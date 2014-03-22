@@ -23,6 +23,8 @@ class BlogModel(object):
         n = 0
         N = (end + 1) - start
 
+        print str(start) + ", " + str(end)
+
         posts = []
         i = 0
         while n < N:
