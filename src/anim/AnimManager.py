@@ -1,15 +1,19 @@
 drivers = []
+remove_next_tick = []
 
 def update(dT):
-    remove = []
+    for driver in remove_next_tick:
+        driver.done = True
+        drivers.remove(driver)
+    while len(remove_next_tick) > 0:
+        remove_next_tick.pop()
 
     for driver in drivers:
         if driver.update(dT):
-            remove.append(driver)
+            remove_next_tick.append(driver)
 
-    for driver in remove:
-        driver.done = True
-        drivers.remove(driver)
+    
 
 def addDriver(driver):
     drivers.append(driver)
+    driver.remove_next_tick = False

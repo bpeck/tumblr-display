@@ -6,8 +6,11 @@ class BlogCrawlController(object):
         self.t = self.period
 
     def update(self, dT):
-        if self.view.initialized:
+        # the view is usually not ready while it is waiting for
+        # images to finish loading in
+        if self.view.isReady():    
             self.t -= dT
-        if self.t <= 0:
-            self.view.incPost()
-            self.t = self.period
+
+            if self.t <= 0:
+                self.view.incPost()
+                self.t = self.period

@@ -11,6 +11,8 @@ class BlogModel(object):
         self.sName = blog_info['blog']['title']
         self.nNumPosts = blog_info['total_posts']
 
+        self.loaded = set()
+
         print "Created model for blog " + self.getName()
 
     def getName(self):
@@ -33,9 +35,13 @@ class BlogModel(object):
 
             for p in ps['posts']:
                 if typ == None or p['type'] == typ:
+                    if p['id'] in self.loaded:
+                        print "DUPE! " + str(p['id'])
+                    self.loaded.add(p['id'])
+                    print 'post of type ' + p['type'] + '\tid: ' + str(p['id'])
                     posts.append(PostModel.MakePostModel(p))
                     n += 1
                 i += 1
 
         print 'retrieved ' + str(len(posts))
-        return posts
+        return posts, start + i

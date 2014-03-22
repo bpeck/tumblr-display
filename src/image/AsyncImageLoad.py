@@ -35,7 +35,7 @@ def stop():
 def load(url, w, h, callback):
     if downloader_process.is_alive():
         on_load_callbacks[url] = callback
-        print('requesting async img load ' + url + " (" + str(w) + ", " + str(h) + ")")
+        #print('requesting async img load ' + url + " (" + str(w) + ", " + str(h) + ")")
         url_queue.put((url, w, h))
     else:
         assert(False)
@@ -52,12 +52,19 @@ def createSurface(buff, w, h, callback):
     if callback:
         callback(image, w, h)
 
-
+_ticks_to_wait_in_between_loads = 4
+_ticks_to_wait = 0
 def update():
-    if not img_buffer_queue.empty():
-        url, w, h, buff = img_buffer_queue.get()
-        callback = on_load_callbacks.pop(url, None)
-        createSurface(buff, w, h, callback)
+    global _ticks_to_wait
+    if _ticks_to_wait <= 0:
+        if not img_buffer_queue.empty():
+            url, w, h, buff = img_buffer_queue.get()
+            callback = on_load_callbacks.pop(url, None)
+            createSurface(buff, w, h, callback)
+            _ticks_to_wait = _ticks_to_wait_in_between_loads
+    else:
+        _ticks_to_wait -= 1
+
 
 url_queue = multiprocessing.queues.SimpleQueue()
 img_buffer_queue = multiprocessing.queues.SimpleQueue()

@@ -34,8 +34,8 @@ class Vect2AnimDriver(AnimDriver):
         new_x = self.ease_func(self.t, self.start.x, self.delta.x, self.total_time)
         new_y = self.ease_func(self.t, self.start.y, self.delta.y, self.total_time)
 
-        if self.start.y < 0:
-            print str(new_x) + ', ' + str(new_y)
+        #if self.start.y < 0:
+        #    print str(new_x) + ', ' + str(new_y)
 
         self.obj.x = new_x
         self.obj.y = new_y
