@@ -14,7 +14,7 @@ class MultiPhotoView(Drawable):
     class PhotoProp(Prop):
         STATE_SCROLL_IN, STATE_DISPLAY, STATE_SCROLL_OUT, NUM_STATES = range(4)
         def __init__(self, image, w, h):
-            super(PhotoProp, self).__init__()
+            super(MultiPhotoView.PhotoProp, self).__init__()
 
             prop_aspect = w / h
             screen_aspect = MultiPhotoView.rect.w / MultiPhotoView.rect.h
@@ -32,20 +32,20 @@ class MultiPhotoView(Drawable):
         def show(self, scroll_speed, display_speed):
             self.scroll_speed = scroll_speed
 
-            self.state = PhotoProp.STATE_SCROLL_IN        
+            self.state = MultiPhotoView.PhotoProp.STATE_SCROLL_IN        
             self.current_action = self.moveTo(0, (MultiPhotoView.rect.h - self.rect.h) * 0.5, self.scroll_speed)
             AnimManager.addDriver(self.current_action)
 
         def hide(self):
-            self.state = PhotoProp.STATE_SCROLL_OUT
+            self.state = MultiPhotoView.PhotoProp.STATE_SCROLL_OUT
             self.current_action = self.moveTo(0, MultiPhotoView.rect.h, self.scroll_speed)
             AnimManager.addDriver(self.current_action)
 
         def update(self, dT):
-            if self.state == PhotoProp.STATE_SCROLL_IN:
+            if self.state == MultiPhotoView.PhotoProp.STATE_SCROLL_IN:
                 if self.current_action.done:
-                    self.state = PhotoProp.STATE_DISPLAY
-            elif self.state == PhotoProp.STATE_SCROLL_OUT:
+                    self.state = MultiPhotoView.PhotoProp.STATE_DISPLAY
+            elif self.state == MultiPhotoView.PhotoProp.STATE_SCROLL_OUT:
                 if self.current_action.done:
                     self.done = True
 
