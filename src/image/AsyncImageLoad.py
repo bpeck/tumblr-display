@@ -16,12 +16,15 @@ def _worker(in_queue, out_queue):
             if isinstance(obj, bool):
                 done = obj
             else:
-                url, w, h = obj
+                url = obj
                 
-                jpg_encoded_str = urllib2.urlopen(url).read()
+                # could be encoded in jpg, gif, etc
+                encoded_str = urllib2.urlopen(url).read()
                 parser = ImageFile.Parser()
-                parser.feed(jpg_encoded_str)
+                # decompress to bitmap
+                parser.feed(encoded_str)
                 pil_image = parser.close() 
+                w, h = pil_image.size
                 buff = pil_image.tostring()
                 
                 out_queue.put((url, w, h, buff))
@@ -32,20 +35,20 @@ def start():
 def stop():
     url_queue.put(True)
 
-def load(url, w, h, callback):
+def load(url, callback):
     if downloader_process.is_alive():
         on_load_callbacks[url] = callback
         #print('requesting async img load ' + url + " (" + str(w) + ", " + str(h) + ")")
-        url_queue.put((url, w, h))
+        url_queue.put(url)
     else:
         assert(False)
 
-def loadPropImage(url, w, h, prop):
+def loadPropImage(url, prop):
     def callback(img, w, h):
         prop.image = img
         prop.rect = Rect(0, 0, w, h)
 
-    load(url, w, h, callback)
+    load(url, callback)
 
 def createSurface(buff, w, h, callback):
     image = pygame.image.frombuffer(buff, (w, h), "RGB")

@@ -21,7 +21,7 @@ class BlogModel(object):
     def getNumPosts(self):
         return self.nNumPosts
 
-    def getPosts(self, start=0, end=19, typ='photo'):
+    def getPosts(self, start=0, end=19, types=['photo', 'video']):
         n = 0
         N = (end + 1) - start
 
@@ -34,7 +34,7 @@ class BlogModel(object):
             ps = self.client.posts(self.sAccount, limit=grab, offset= (start + i))
 
             for p in ps['posts']:
-                if typ == None or p['type'] == typ:
+                if p['type'] in types:
                     if p['id'] in self.loaded:
                         print "DUPE! " + str(p['id'])
                     self.loaded.add(p['id'])

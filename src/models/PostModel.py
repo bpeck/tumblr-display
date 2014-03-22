@@ -3,6 +3,8 @@ POST_TYPES = ['text', 'quote', 'link', 'answer', 'video', 'audio', 'photo', 'cha
 def MakePostModel(post_json):
     if post_json['type'] == 'photo':
         return PhotoPostModel(post_json)
+    elif post_json['type'] == 'video':
+        return VideoPostModel(post_json)
     else:
         return PostModel(post_json)
 
@@ -26,7 +28,7 @@ class PhotoPostModel(PostModel):
         photo = self.tPhotoData[n]
 
         if desired_width == None and desired_height == None:
-            return (photo['original_size']['url'], photo['original_size']['width'], photo['original_size']['height'])
+            return photo['original_size']['url']
 
         minError = 999999
         minErrorIdx = -1
@@ -44,4 +46,13 @@ class PhotoPostModel(PostModel):
 
             idx += 1
 
-        return (photo['alt_sizes'][minErrorIdx]['url'], photo['alt_sizes'][minErrorIdx]['width'], photo['alt_sizes'][minErrorIdx]['height'])
+        return photo['alt_sizes'][minErrorIdx]['url']
+
+class VideoPostModel(PostModel):
+    def __init__(self, post_json):
+        super(VideoPostModel, self).__init__(post_json)
+
+        self.thumbnail_url = post_json['thumbnail_url']
+
+    def getPhoto(self, n, desired_width, desired_height):
+        return self.thumbnail_url

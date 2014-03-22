@@ -108,11 +108,11 @@ class MultiPhotoView(Drawable):
         # load each image in the batch. On the last image of the batch,
         # set the view's ready flag to true
         for i in range(len(posts)):
-            url, w, h = posts[i].getPhoto(0, None, self.rect.h)
+            url = posts[i].getPhoto(0, None, self.rect.h)
             fCallback = callback
             if i == len(posts) - 1:
                 fCallback = lastInBatchCallback
-            AsyncImageLoad.load(url, w, h, fCallback)
+            AsyncImageLoad.load(url, fCallback)
 
 
         self.last_cached_post_idx += look_ahead + 1
