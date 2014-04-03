@@ -10,22 +10,21 @@ def MakePostModel(post_json):
 
 class PostModel(object):
     def __init__(self, post_json):
-        self.sURL = post_json['post_url']
-        self.sPostType = post_json['type']
-        self.sDate = post_json['date']
+        self.url = post_json['post_url']
+        self.post_type = post_json['type']
+        self.date = post_json['date']
 
 class PhotoPostModel(PostModel):
     def __init__(self, post_json):
         super(PhotoPostModel, self).__init__(post_json)
 
-        self.sPhotoPermaURL = post_json['image_permalink']
-        self.sCaption = post_json['caption']
-        self.tPhotoData = post_json['photos']
+        self.caption = post_json['caption']
+        self.photo_data = post_json['photos']
 
     def getPhoto(self, n=0, desired_width=None, desired_height=None):
-        n = max(0, min(len(self.tPhotoData)-1, n))
+        n = max(0, min(len(self.photo_data)-1, n))
 
-        photo = self.tPhotoData[n]
+        photo = self.photo_data[n]
 
         if desired_width == None and desired_height == None:
             return photo['original_size']['url']
@@ -48,6 +47,15 @@ class PhotoPostModel(PostModel):
 
         return photo['alt_sizes'][minErrorIdx]['url']
 
+    def getPhotos(self, desired_width, desired_height):
+        photos = []
+        for i in range(len(self.photo_data)):
+            photos.append(self.getPhoto(i, desired_width, desired_height))
+        return photos
+
+    def getNumPhotos(self):
+        return len(self.photo_data)
+
 class VideoPostModel(PostModel):
     def __init__(self, post_json):
         super(VideoPostModel, self).__init__(post_json)
@@ -56,3 +64,9 @@ class VideoPostModel(PostModel):
 
     def getPhoto(self, n, desired_width, desired_height):
         return self.thumbnail_url
+
+    def getPhotos(self, desired_width, desired_height):
+        return [self.getPhoto(0, desired_width, desired_height)]
+
+    def getNumPhotos(self):
+        return 1

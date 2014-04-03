@@ -6,6 +6,7 @@ from pygame import Rect
 from pygame import transform
 
 from maths.Vect2 import Vect2
+from maths import Ease
 
 class MultiPhotoView(Drawable):
     SCROLL_SPEED = 1.0
@@ -21,13 +22,11 @@ class MultiPhotoView(Drawable):
             if state_listener:
                 self.state_listeners.append(state_listener)
 
-            prop_aspect = w / h
-            screen_aspect = MultiPhotoView.rect.w / MultiPhotoView.rect.h
-            if prop_aspect < screen_aspect:
-                w, h = MultiPhotoView.rect.h * prop_aspect, MultiPhotoView.rect.h
-            else:
-                w, h = MultiPhotoView.rect.w, MultiPhotoView.rect.w / prop_aspect
-            self.image = transform.smoothscale(image, (w, h))
+                scale = min( float(MultiPhotoView.rect.w) / float(w), float(MultiPhotoView.rect.h) / float(h))
+                w = int(float(w) * scale)
+                h = int(float(h) * scale)                
+                self.image = transform.smoothscale(image, (w, h))
+            
             self.rect = Rect(0, 0, w, h)
 
             self.display_time = 0
@@ -49,13 +48,16 @@ class MultiPhotoView(Drawable):
         def show(self, scroll_speed, display_speed):
             self.scroll_speed = scroll_speed
 
-            self.state = MultiPhotoView.PhotoProp.STATE_SCROLL_IN        
-            self.current_action = self.moveTo(0, (MultiPhotoView.rect.h - self.rect.h) * 0.5, self.scroll_speed)
+            self.state = MultiPhotoView.PhotoProp.STATE_SCROLL_IN
+            x = (MultiPhotoView.rect.w - self.rect.w) * 0.5
+            y = (MultiPhotoView.rect.h - self.rect.h) * 0.5
+            self.rPos.x = x
+            self.current_action = self.moveTo(x, y, self.scroll_speed, Ease.outBounce)
             AnimManager.addDriver(self.current_action)
 
         def hide(self):
             self.state = MultiPhotoView.PhotoProp.STATE_SCROLL_OUT
-            self.current_action = self.moveTo(0, MultiPhotoView.rect.h, self.scroll_speed)
+            self.current_action = self.moveTo(self.rPos.x, MultiPhotoView.rect.h, self.scroll_speed, Ease.outExpo)
             AnimManager.addDriver(self.current_action)
 
         def update(self, dT):
@@ -107,12 +109,15 @@ class MultiPhotoView(Drawable):
 
         # load each image in the batch. On the last image of the batch,
         # set the view's ready flag to true
+        num_photos = sum(map(lambda x: x.getNumPhotos(), posts))
+        photo_num = 0
         for i in range(len(posts)):
-            url = posts[i].getPhoto(0, None, self.rect.h)
-            fCallback = callback
-            if i == len(posts) - 1:
-                fCallback = lastInBatchCallback
-            AsyncImageLoad.load(url, fCallback)
+            for url in posts[i].getPhotos(None, self.rect.h):
+                fCallback = callback
+                if photo_num == num_photos - 1:
+                    fCallback = lastInBatchCallback
+                AsyncImageLoad.load(url, fCallback)
+                photo_num += 1
 
 
         self.last_cached_post_idx += look_ahead + 1
