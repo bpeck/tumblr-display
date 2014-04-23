@@ -2,8 +2,11 @@ from Drawable import Drawable
 from Prop import Prop
 from image import AsyncImageLoad
 from anim import AnimManager
+from anim.AnimDriver import IterableAnimDriver
 from pygame import Rect
 from pygame import transform
+from pygame import draw as Draw
+from pygame import Color
 
 from maths.Vect2 import Vect2
 from maths import Ease
@@ -15,7 +18,7 @@ class MultiPhotoView(Drawable):
     # a rectangular sprite that displays a photo on screen for a certain amount of time
     class PhotoProp(Prop):
         STATE_SCROLL_IN, STATE_DISPLAY, STATE_SCROLL_OUT, NUM_STATES = range(4)
-        def __init__(self, image, w, h, state_listener):
+        def __init__(self, images, w, h, state_listener):
             super(MultiPhotoView.PhotoProp, self).__init__()
 
             self.state_listeners = []
@@ -23,15 +26,22 @@ class MultiPhotoView(Drawable):
                 self.state_listeners.append(state_listener)
 
                 scale = min( float(MultiPhotoView.rect.w) / float(w), float(MultiPhotoView.rect.h) / float(h))
-                w = int(float(w) * scale)
-                h = int(float(h) * scale)                
-                self.image = transform.smoothscale(image, (w, h))
-            
-            self.rect = Rect(0, 0, w, h)
+                new_w = int(float(w) * scale)
+                new_h = int(float(h) * scale)
+
+                self.frames = []
+                for frame in images:
+                    self.frames.append(transform.smoothscale(frame, (new_w, new_h)))
+
+                self.rect = Rect(0, 0, new_w, new_h)
+                self.rPos = Vect2((0, -new_w))
+            else:
+                self.frames = images
+                self.rect = Rect(0, 0, w, h)
+                self.rPos = Vect2((0, -w))
 
             self.display_time = 0
             self.done = False
-            self.rPos = Vect2((0, -w))
 
             self._state = None
 
@@ -45,28 +55,40 @@ class MultiPhotoView(Drawable):
             for listener in self.state_listeners:
                 listener.onPhotoPropStateChange(self, new_state)
 
+        def draw(self, rDisplayScreen, dT=None):
+            super(MultiPhotoView.PhotoProp, self).draw(rDisplayScreen, dT)
+            if self.rect:
+                dbg_rect = Rect(self.rPos[0], self.rPos[1], self.rect.w, self.rect.h)
+                Draw.rect(rDisplayScreen, Color("red"), dbg_rect, 1)
+
+
         def show(self, scroll_speed, display_speed):
             self.scroll_speed = scroll_speed
 
             self.state = MultiPhotoView.PhotoProp.STATE_SCROLL_IN
+
             x = (MultiPhotoView.rect.w - self.rect.w) * 0.5
             y = (MultiPhotoView.rect.h - self.rect.h) * 0.5
             self.rPos.x = x
-            self.current_action = self.moveTo(x, y, self.scroll_speed, Ease.outBounce)
-            AnimManager.addDriver(self.current_action)
+            self.current_move_action = self.moveTo(x, y, self.scroll_speed, Ease.outBounce)
+            AnimManager.addDriver(self.current_move_action)
+
+            self.current_anim_action = IterableAnimDriver(self.frames, self, 'image', True, Ease.linear)
+            AnimManager.addDriver(self.current_anim_action)
 
         def hide(self):
             self.state = MultiPhotoView.PhotoProp.STATE_SCROLL_OUT
-            self.current_action = self.moveTo(self.rPos.x, MultiPhotoView.rect.h, self.scroll_speed, Ease.outExpo)
-            AnimManager.addDriver(self.current_action)
+            self.current_move_action = self.moveTo(self.rPos.x, MultiPhotoView.rect.h, self.scroll_speed, Ease.outExpo)
+            AnimManager.addDriver(self.current_move_action)
 
         def update(self, dT):
             if self.state == MultiPhotoView.PhotoProp.STATE_SCROLL_IN:
-                if self.current_action.done:
+                if self.current_move_action.done:
                     self.state = MultiPhotoView.PhotoProp.STATE_DISPLAY
             elif self.state == MultiPhotoView.PhotoProp.STATE_SCROLL_OUT:
-                if self.current_action.done:
+                if self.current_move_action.done:
                     self.done = True
+                    self.current_anim_action.kill()
 
     def __init__(self, blogModel, viewableArea):
         MultiPhotoView.rect = Rect(0, 0, viewableArea[0], viewableArea[1])
@@ -86,20 +108,20 @@ class MultiPhotoView(Drawable):
         self.last_cached_post_idx = self.post
 
         self.photoProps = []
-        self.preload_images(2)
+        self.preload_images(5)
 
     def isReady(self):
         return self.ready
 
     def preload_images(self, look_ahead = 0):
         self.ready = False
-        def callback(img, w, h):
-            self.img_queue.append((img, w, h))
+        def callback(images, w, h):
+            self.img_queue.append((images, w, h))
             if not self.initialized:
                 self.initialized = True
                 self.setPost(self.post)
-        def lastInBatchCallback(img, w, h):
-            callback(img, w, h)
+        def lastInBatchCallback(images, w, h):
+            callback(images, w, h)
             self.ready = True
 
         start, end = self.last_cached_post_idx, self.last_cached_post_idx + look_ahead
@@ -132,11 +154,11 @@ class MultiPhotoView(Drawable):
         for prop in self.photoProps:
             prop.hide()
 
-        image, w, h = self.img_queue.pop(0)
+        images, w, h = self.img_queue.pop(0)
         
         self.post = idx
 
-        photoProp = MultiPhotoView.PhotoProp(image, w, h, self)
+        photoProp = MultiPhotoView.PhotoProp(images, w, h, self)
         if self.preload_needed():
             self.preload_after_prop_displays = photoProp
 
@@ -145,7 +167,7 @@ class MultiPhotoView(Drawable):
 
     def onPhotoPropStateChange(self, photo_prop, state):
         if photo_prop == self.preload_after_prop_displays and state == MultiPhotoView.PhotoProp.STATE_DISPLAY:
-            self.preload_images(2)
+            self.preload_images(5)
             self.preload_after_prop_displays = None
 
     def draw(self, rDisplayScreen, dT):

@@ -17,7 +17,7 @@ class MainScreen(Screen):
 
         print "created tumblr client"
 
-        self.rModel = BlogModel(client, 'dinakelberman')
+        self.rModel = BlogModel(client, 'flame-of-light')
         self.rView = MultiPhotoView(self.rModel, viewableArea)
         self.rController = BlogCrawlController(self.rView)
 

@@ -15,7 +15,7 @@ class Prop(Sprite, Drawable):
         self.rPos = Vect2((0.0, 0.0))
         self.rParent = None
     
-    def draw(self, rDisplayScreen):
+    def draw(self, rDisplayScreen, dT=None):
         if self.image:
             p = self.getWorldPos()
             rDisplayScreen.blit(self.image, (int(p.x), int(p.y)))
