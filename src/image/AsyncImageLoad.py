@@ -63,24 +63,25 @@ def _worker(in_queue, out_queue):
             obj = in_queue.get()
             # if a bool is passed down the queue, set the done flag
             if isinstance(obj, bool):
+                print "got a bool down the pipe; shutting down"
                 done = True
                 import sys
-                sys.exit()
+                #sys.exit()
             else:
                 url = obj
                 
-                #try:
                 w, h, buffers = _downloadImage(url)
                 out_queue.put((url, w, h, buffers))
-                #except:
-                print "Could not download image at " + url
+        pygame.time.wait(SLEEP_TIME)
 
 def start():
     downloader_process.start()
 
 def stop():
+    print "Stopping async image download worker"
     global worker_done
-    url_queue.put(True)
+    url_queue.empty()
+    downloader_process.terminate()
     worker_done = True
 
 def load(url, callback):
@@ -108,6 +109,8 @@ def createSurfaces(buffers, w, h, callback):
 
 _ticks_to_wait_in_between_loads = 4
 _ticks_to_wait = 0
+
+SLEEP_TIME = 30
 def update():
     if worker_done:
         return

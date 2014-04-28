@@ -70,7 +70,7 @@ class MultiPhotoView(Drawable):
             x = (MultiPhotoView.rect.w - self.rect.w) * 0.5
             y = (MultiPhotoView.rect.h - self.rect.h) * 0.5
             self.rPos.x = x
-            self.current_move_action = self.moveTo(x, y, self.scroll_speed, Ease.outBounce)
+            self.current_move_action = self.moveTo(x, y, self.scroll_speed, Ease.inOutCubic)
             AnimManager.addDriver(self.current_move_action)
 
             self.current_anim_action = IterableAnimDriver(self.frames, self, 'image', True, Ease.linear)
@@ -78,7 +78,7 @@ class MultiPhotoView(Drawable):
 
         def hide(self):
             self.state = MultiPhotoView.PhotoProp.STATE_SCROLL_OUT
-            self.current_move_action = self.moveTo(self.rPos.x, MultiPhotoView.rect.h, self.scroll_speed, Ease.outExpo)
+            self.current_move_action = self.moveTo(self.rPos.x, MultiPhotoView.rect.h, self.scroll_speed, Ease.inOutCubic)
             AnimManager.addDriver(self.current_move_action)
 
         def update(self, dT):

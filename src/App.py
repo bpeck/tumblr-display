@@ -12,6 +12,8 @@ from UI.MainScreen import MainScreen
 from gifTest import gifScreen
 from image import AsyncImageLoad
 
+SLEEP_TIME = 8
+
 class App(object):
     
     def __init__(self):
@@ -53,11 +55,14 @@ class App(object):
                         self.rScreenManager.onTick(dT)
 
                         self.nLastUpdate = t
+
+                pygame.time.wait(SLEEP_TIME)
         except:
             import traceback
             traceback.print_exc()            
-        finally:
-            self.tearDown()
+        
+        self.tearDown()
 
     def tearDown(self):
+        print "Tearing down " + Settings.WINDOW_TITLE
         AsyncImageLoad.stop()
