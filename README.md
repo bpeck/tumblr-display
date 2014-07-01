@@ -10,11 +10,10 @@
 </ul>
 
 <h2>Binary Dependencies</h2>
-<p>Gifsicle, a really great command-line tool for manipulating GIF images, is used for parsing animated GIFs. If Gifsicle is not found in your PATH at runtime, then animated GIFs will not be displayed.<p>
-<p>You can find Gifsicle, along with instructions on how to install it <a href="http://www.lcdf.org/gifsicle/">here.</a> Windows and Unix is very straight forward to install, just make sure the gifsicle binary is in your PATH. Mac users, I recommend installing via Homebrew, with <code>brew install gifsicle</code>.</p>
+<p><a href="http://www.lcdf.org/gifsicle/">Gifsicle</a>, a really great command-line tool for manipulating GIF images, is used for parsing animated GIFs. If Gifsicle is not found in your PATH at runtime, then animated GIFs will not be displayed.</p>
 
 <h2>Tumblr API Setup - IMPORTANT</h2>
-<p>Sorry! You have to get an API key from tumblr to request post data. Maybe I will write a scraper to get around this in the future, but for now, you'll have to:</p>
+<p>Sorry! You have to get an API key from tumblr to request other user's tumblr post data. Maybe I will write a scraper to get around this in the future, but for now, you'll have to:</p>
 <ol>
 <li>Sign up with Tumblr</li>
 <li>With newly created account, sign in and ask for an API key in the account dashboard.</li>
