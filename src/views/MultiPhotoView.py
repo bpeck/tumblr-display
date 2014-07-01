@@ -34,7 +34,7 @@ class MultiPhotoView(Drawable):
                     self.frames.append(transform.smoothscale(frame, (new_w, new_h)))
 
                 self.rect = Rect(0, 0, new_w, new_h)
-                self.pos = Vect2((0, -new_w))
+                self.pos = Vect2((0, -new_h))
             else:
                 self.frames = images
                 self.rect = Rect(0, 0, w, h)
