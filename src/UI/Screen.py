@@ -2,20 +2,20 @@ from anim import AnimManager
 
 class Screen(object):
     def __init__(self):
-        self.sName = "Screen"
-        self.tDrawables = []
-        self.tControllers = []
+        self.name = "Screen"
+        self.drawables = []
+        self.controllers = []
 
     def getName(self):
-        return self.sName
+        return self.name
 
-    def onTick(self, rDisplayScreen, dT):
+    def onTick(self, display_screen, dT):
         AnimManager.update(dT)
 
-        for drawable in self.tDrawables:
-            drawable.draw(rDisplayScreen, dT)
+        for drawable in self.drawables:
+            drawable.draw(display_screen, dT)
         
-        for controller in self.tControllers:
+        for controller in self.controllers:
             controller.update(dT)
 
     def onMouseEvent(self, event):
@@ -25,8 +25,8 @@ class Screen(object):
         pass
 
     def insertDrawable(self, drawable, idx=0):
-        idx = max(0, min(len(self.tDrawables) - 1, idx))
-        self.tDrawables.insert(idx, drawable)
+        idx = max(0, min(len(self.drawables) - 1, idx))
+        self.drawables.insert(idx, drawable)
 
     def removeDrawable(self, drawable):
-        self.tDrawables.remove(drawable)
+        self.drawables.remove(drawable)

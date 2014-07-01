@@ -19,16 +19,16 @@ class App(object):
     def __init__(self):
         self.done = False
         
-        self.nTickRate = Settings.TICK_RATE
-        self.nLastUpdate = get_ticks()
+        self.tick_rate = Settings.TICK_RATE
+        self.last_update = get_ticks()
 
         pygame.display.set_caption(Settings.WINDOW_TITLE)
         screen = pygame.display.set_mode( \
             (Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT), Settings.WINDOW_FLAGS)
 
-        self.rScreenManager = ScreenManager(screen)
+        self.screen_manager = ScreenManager(screen)
 
-        self.rScreenManager.pushScreen(MainScreen())
+        self.screen_manager.pushScreen(MainScreen())
 
         self.mainLoop()
     
@@ -39,23 +39,24 @@ class App(object):
                     if e.type == QUIT:
                         self.done = True
                         break
-                    elif e.type == KEYDOWN and (e.key == pygame.K_ESCAPE or e.key == pygame.K_Q):
+                    elif e.type == KEYDOWN and \
+                        (e.key == pygame.K_ESCAPE or e.key == pygame.K_Q):
                        self.done = True
                     elif e.type == KEYDOWN or e.type == KEYUP:
-                        self.rScreenManager.onKeyboardEvent(e)
+                        self.screen_manager.onKeyboardEvent(e)
                     elif e.type  == MOUSEMOTION or e.type  ==  MOUSEBUTTONDOWN or e.type == MOUSEBUTTONUP:
-                        self.rScreenManager.onMouseEvent(e)
+                        self.screen_manager.onMouseEvent(e)
 
                 if not self.done:
                     t = get_ticks()
-                    if self.nLastUpdate + self.nTickRate < t:
-                        dT = t - self.nLastUpdate
+                    if self.last_update + self.tick_rate < t:
+                        dT = t - self.last_update
 
                         AsyncImageLoad.update()
                         
-                        self.rScreenManager.onTick(dT)
+                        self.screen_manager.onTick(dT)
 
-                        self.nLastUpdate = t
+                        self.last_update = t
 
                 pygame.time.wait(SLEEP_TIME)
         except:

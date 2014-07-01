@@ -7,15 +7,15 @@ import pygame
 
 class SinglePhotoView(Drawable):
     def __init__(self, blogModel):
-        self.rModel = blogModel
+        self.model = blogModel
 
-        url , w, h = self.rModel.getPosts(0, 0)[0].getPhoto()
+        url , w, h = self.model.getPosts(0, 0)[0].getPhoto()
         
-        self.rProp = Prop()
+        self.prop = Prop()
 
-        AsyncImageLoad.loadPropImage(url, self.rProp)
+        AsyncImageLoad.loadPropImage(url, self.prop)
 
-    def draw(self, rDisplayScreen):
-        self.rProp.draw(rDisplayScreen)
+    def draw(self, display_screen):
+        self.prop.draw(display_screen)
 
     

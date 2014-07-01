@@ -1,6 +1,6 @@
 POST_TYPES = ['text', 'quote', 'link', 'answer', 'video', 'audio', 'photo', 'chat']
 
-def MakePostModel(post_json):
+def makePostModel(post_json):
     if post_json['type'] == 'photo':
         return PhotoPostModel(post_json)
     elif post_json['type'] == 'video':

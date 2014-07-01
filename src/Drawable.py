@@ -1,3 +1,3 @@
 class Drawable(object):
-    def draw(self, rDisplayScreen, dT):
+    def draw(self, display_screen, dT):
         pass

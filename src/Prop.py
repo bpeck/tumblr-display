@@ -12,31 +12,31 @@ class Prop(Sprite, Drawable):
     def __init__(self):
         self.rect = None
         self.image = None
-        self.rPos = Vect2((0.0, 0.0))
-        self.rParent = None
+        self._pos = Vect2((0.0, 0.0))
+        self.parent = None
     
-    def draw(self, rDisplayScreen, dT=None):
+    def draw(self, display_screen, dT=None):
         if self.image:
             p = self.getWorldPos()
-            rDisplayScreen.blit(self.image, (int(p.x), int(p.y)))
+            display_screen.blit(self.image, (int(p.x), int(p.y)))
     
     @property
     def pos(self):
-        return self.rPos
+        return self._pos
 
     @pos.setter
     def pos(self, value):
-        self.rPos = value
+        self._pos = value
 
     def getWorldPos(self):
-        if self.rParent:
-            return self.rPos + self.rParent.getWorldPos()
+        if self.parent:
+            return self.pos + self.parent.getWorldPos()
         else:
-            return self.rPos
+            return self.pos
 
     def move(self, dx, dy, t, ease_func = Ease.linear):
-        dest = self.rPos + Vect2((dx, dy))
-        return Vect2AnimDriver(self.rPos, dest, t, ease_func)
+        dest = self.pos + Vect2((dx, dy))
+        return Vect2AnimDriver(self.pos, dest, t, ease_func)
 
     def moveTo(self, x, y, t, ease_func = Ease.linear):
-        return Vect2AnimDriver(self.rPos, Vect2((x, y)), t, ease_func)
+        return Vect2AnimDriver(self.pos, Vect2((x, y)), t, ease_func)

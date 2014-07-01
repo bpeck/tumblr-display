@@ -34,11 +34,11 @@ class MultiPhotoView(Drawable):
                     self.frames.append(transform.smoothscale(frame, (new_w, new_h)))
 
                 self.rect = Rect(0, 0, new_w, new_h)
-                self.rPos = Vect2((0, -new_w))
+                self.pos = Vect2((0, -new_w))
             else:
                 self.frames = images
                 self.rect = Rect(0, 0, w, h)
-                self.rPos = Vect2((0, -w))
+                self.pos = Vect2((0, -w))
 
             self.display_time = 0
             self.done = False
@@ -55,11 +55,11 @@ class MultiPhotoView(Drawable):
             for listener in self.state_listeners:
                 listener.onPhotoPropStateChange(self, new_state)
 
-        # def draw(self, rDisplayScreen, dT=None):
-        #     super(MultiPhotoView.PhotoProp, self).draw(rDisplayScreen, dT)
+        # def draw(self, display_screen, dT=None):
+        #     super(MultiPhotoView.PhotoProp, self).draw(display_screen, dT)
         #     if self.rect:
-        #         dbg_rect = Rect(self.rPos[0], self.rPos[1], self.rect.w, self.rect.h)
-        #         Draw.rect(rDisplayScreen, Color("red"), dbg_rect, 1)
+        #         dbg_rect = Rect(self.pos[0], self.pos[1], self.rect.w, self.rect.h)
+        #         Draw.rect(display_screen, Color("red"), dbg_rect, 1)
 
 
         def show(self, scroll_speed, display_speed):
@@ -69,7 +69,7 @@ class MultiPhotoView(Drawable):
 
             x = (MultiPhotoView.rect.w - self.rect.w) * 0.5
             y = (MultiPhotoView.rect.h - self.rect.h) * 0.5
-            self.rPos.x = x
+            self.pos.x = x
             self.current_move_action = self.moveTo(x, y, self.scroll_speed, Ease.inOutCubic)
             AnimManager.addDriver(self.current_move_action)
 
@@ -78,7 +78,7 @@ class MultiPhotoView(Drawable):
 
         def hide(self):
             self.state = MultiPhotoView.PhotoProp.STATE_SCROLL_OUT
-            self.current_move_action = self.moveTo(self.rPos.x, MultiPhotoView.rect.h, self.scroll_speed, Ease.inOutCubic)
+            self.current_move_action = self.moveTo(self.pos.x, MultiPhotoView.rect.h, self.scroll_speed, Ease.inOutCubic)
             AnimManager.addDriver(self.current_move_action)
 
         def update(self, dT):
@@ -90,9 +90,9 @@ class MultiPhotoView(Drawable):
                     self.done = True
                     self.current_anim_action.kill()
 
-    def __init__(self, blogModel, viewableArea):
-        MultiPhotoView.rect = Rect(0, 0, viewableArea[0], viewableArea[1])
-        self.rModel = blogModel
+    def __init__(self, blogModel, viewable_area):
+        MultiPhotoView.rect = Rect(0, 0, viewable_area[0], viewable_area[1])
+        self.model = blogModel
         self.post = 0
         # while the view isn't ready, the controller will not
         # ask it to increment posts. So during an image load
@@ -107,7 +107,7 @@ class MultiPhotoView(Drawable):
         self.img_queue = []
         self.last_cached_post_idx = self.post
 
-        self.photoProps = []
+        self.photo_props = []
         self.preload_images(5)
 
     def isReady(self):
@@ -125,7 +125,7 @@ class MultiPhotoView(Drawable):
             self.ready = True
 
         start, end = self.last_cached_post_idx, self.last_cached_post_idx + look_ahead
-        posts, self.last_cached_post_idx = self.rModel.getPosts(self.last_cached_post_idx, self.last_cached_post_idx + look_ahead)
+        posts, self.last_cached_post_idx = self.model.getPosts(self.last_cached_post_idx, self.last_cached_post_idx + look_ahead)
         #print "requested " + str(len(posts)) + " posts"
 
         # load each image in the batch. On the last image of the batch,
@@ -150,33 +150,33 @@ class MultiPhotoView(Drawable):
         self.setPost(self.post + 1)
 
     def setPost(self, idx):
-        for prop in self.photoProps:
+        for prop in self.photo_props:
             prop.hide()
 
         images, w, h = self.img_queue.pop(0)
         
         self.post = idx
 
-        photoProp = MultiPhotoView.PhotoProp(images, w, h, self)
+        photo_prop = MultiPhotoView.PhotoProp(images, w, h, self)
         if self.preload_needed():
-            self.preload_after_prop_displays = photoProp
+            self.preload_after_prop_displays = photo_prop
 
-        photoProp.show(MultiPhotoView.SCROLL_SPEED, MultiPhotoView.DISPLAY_SPEED)
-        self.photoProps.append(photoProp)
+        photo_prop.show(MultiPhotoView.SCROLL_SPEED, MultiPhotoView.DISPLAY_SPEED)
+        self.photo_props.append(photo_prop)
 
     def onPhotoPropStateChange(self, photo_prop, state):
         if photo_prop == self.preload_after_prop_displays and state == MultiPhotoView.PhotoProp.STATE_DISPLAY:
             self.preload_images(5)
             self.preload_after_prop_displays = None
 
-    def draw(self, rDisplayScreen, dT):
+    def draw(self, display_screen, dT):
         not_done = []
-        for prop in self.photoProps:
+        for prop in self.photo_props:
             prop.update(dT)
             if not prop.done:
-                prop.draw(rDisplayScreen)
+                prop.draw(display_screen)
                 not_done.append(prop)
 
-        self.photoProps = not_done
+        self.photo_props = not_done
 
     
