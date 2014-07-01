@@ -23,7 +23,8 @@ class App(object):
         self.nLastUpdate = get_ticks()
 
         pygame.display.set_caption(Settings.WINDOW_TITLE)
-        screen = pygame.display.set_mode((Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT), Settings.FULLSCREEN)
+        screen = pygame.display.set_mode( \
+            (Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT), Settings.WINDOW_FLAGS)
 
         self.rScreenManager = ScreenManager(screen)
 
@@ -38,7 +39,7 @@ class App(object):
                     if e.type == QUIT:
                         self.done = True
                         break
-                    elif e.type == KEYDOWN and e.key == pygame.K_ESCAPE:
+                    elif e.type == KEYDOWN and (e.key == pygame.K_ESCAPE or e.key == pygame.K_Q):
                        self.done = True
                     elif e.type == KEYDOWN or e.type == KEYUP:
                         self.rScreenManager.onKeyboardEvent(e)

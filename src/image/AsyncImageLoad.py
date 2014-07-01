@@ -1,12 +1,13 @@
 import pygame
-import sys
+import os
 
 import urllib2
-from PIL import ImageFile, Image
+from PIL import ImageFile, Image, ImageSequence
 import multiprocessing
 import multiprocessing.queues
+import subprocess
 
-def _downloadImage(url):
+def _downloadImage(url, worker_id):
     # could be encoded in jpg, gif, etc
     encoded_str = urllib2.urlopen(url).read()
 
@@ -19,36 +20,38 @@ def _downloadImage(url):
     pil_image = parser.close()
     w, h = pil_image.size
 
-    if pil_image.format == "GIF":
+    if pil_image.format == "GIF" and pil_image.info.has_key('duration'):
+        if GIF_SUPPORT:
+            scratch_dir = os.path.join('..', '_scratch')
+            scratch_name = 'scratch%d' % worker_id
+            # save to disk and use gifsicle to explode into frames
+            scratch_path = os.path.join(scratch_dir, scratch_name)
+            scratch_file = open(scratch_path, 'w')
+            scratch_file.write(encoded_str)
+            scratch_file.close()
 
-        if pil_image.mode == 'P':
-            print "Palette"
+            num_frames = 0
+            pil_image = Image.open(scratch_path)
+            for i in ImageSequence.Iterator(pil_image):
+                num_frames += 1
 
-        pil_image = pil_image.convert("RGB")
+            cmd = 'gifsicle -w --colors=255 %s | gifsicle -w -U -e -o=%s' % \
+                (scratch_path, os.path.join(scratch_dir, scratch_name))
+            os.system(cmd)
 
-        if pil_image.mode == 'P':
-            print "Palette still"
-
-        scratch_path = '../_scratch/scratch.gif'
-        scratch_file = open(scratch_path, 'w')
-        scratch_file.write(encoded_str)
-        scratch_file.close()
-        scratch_image = Image.open(scratch_path)
-        print "num frames: " + str(scratch_image.info['duration'])
-
-        try:
-            i = 1
-            while(1):
-                print "reading frame " + str(i)
-                frame = Image.new('RGB', scratch_image.size)
-                frame.paste(scratch_image)
-                buffers.append(frame.tostring())
-                scratch_image.seek(scratch_image.tell() + 1)
-                i += 1
-        except Exception:
-            pass
+            try:
+                for i in range(num_frames):
+                    scratch_file = os.path.join(scratch_dir, '%s.%03d' % \
+                        (scratch_name, i))
+                    frame = Image.open(scratch_file)
+                    frame = frame.convert('RGB')
+                    buffers.append(frame.tostring())
+            except Exception:
+                return None, None, None
+        else:
+            return None, None, None
     else:
-        if pil_image.mode == 'RGBA':
+        if pil_image.mode != 'RGB':
             pil_image = pil_image.convert('RGB')
         buff = pil_image.tostring()
         buffers = [buff]
@@ -56,7 +59,7 @@ def _downloadImage(url):
     return w, h, buffers
 
 # This is a worker function that sits in it's own process
-def _worker(in_queue, out_queue):
+def _worker(in_queue, out_queue, worker_id):
     done = False
     while not done:
         if not in_queue.empty():
@@ -70,8 +73,9 @@ def _worker(in_queue, out_queue):
             else:
                 url = obj
                 
-                w, h, buffers = _downloadImage(url)
-                out_queue.put((url, w, h, buffers))
+                w, h, buffers = _downloadImage(url, worker_id)
+                if w != None:
+                    out_queue.put((url, w, h, buffers))
         pygame.time.wait(SLEEP_TIME)
 
 def start():
@@ -125,6 +129,12 @@ def update():
     else:
         _ticks_to_wait -= 1
 
+# detect GIF support
+GIF_SUPPORT = True
+try:
+    subprocess.call(["gifsicle", '--version'])
+except OSError:
+    GIF_SUPPORT = False
 
 worker_done = False
 url_queue = multiprocessing.queues.SimpleQueue()
@@ -132,6 +142,7 @@ img_buffer_queue = multiprocessing.queues.SimpleQueue()
 
 on_load_callbacks = {}
 
-downloader_process = multiprocessing.Process(None, _worker, "async image load worker", (url_queue, img_buffer_queue))
+downloader_process = multiprocessing.Process(None, _worker, \
+    "async image load worker", (url_queue, img_buffer_queue, 1))
 
 start()

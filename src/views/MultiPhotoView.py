@@ -55,11 +55,11 @@ class MultiPhotoView(Drawable):
             for listener in self.state_listeners:
                 listener.onPhotoPropStateChange(self, new_state)
 
-        def draw(self, rDisplayScreen, dT=None):
-            super(MultiPhotoView.PhotoProp, self).draw(rDisplayScreen, dT)
-            if self.rect:
-                dbg_rect = Rect(self.rPos[0], self.rPos[1], self.rect.w, self.rect.h)
-                Draw.rect(rDisplayScreen, Color("red"), dbg_rect, 1)
+        # def draw(self, rDisplayScreen, dT=None):
+        #     super(MultiPhotoView.PhotoProp, self).draw(rDisplayScreen, dT)
+        #     if self.rect:
+        #         dbg_rect = Rect(self.rPos[0], self.rPos[1], self.rect.w, self.rect.h)
+        #         Draw.rect(rDisplayScreen, Color("red"), dbg_rect, 1)
 
 
         def show(self, scroll_speed, display_speed):
@@ -125,7 +125,6 @@ class MultiPhotoView(Drawable):
             self.ready = True
 
         start, end = self.last_cached_post_idx, self.last_cached_post_idx + look_ahead
-        print "start, end " + str(start) + ", " + str(end)
         posts, self.last_cached_post_idx = self.rModel.getPosts(self.last_cached_post_idx, self.last_cached_post_idx + look_ahead)
         #print "requested " + str(len(posts)) + " posts"
 

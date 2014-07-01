@@ -25,7 +25,7 @@ class BlogModel(object):
         n = 0
         N = (end + 1) - start
 
-        print str(start) + ", " + str(end)
+        # print "Getting posts. Start idx %d, end idx %d" % (start, end)
 
         posts = []
         i = 0
@@ -36,12 +36,18 @@ class BlogModel(object):
             for p in ps['posts']:
                 if p['type'] in types:
                     if p['id'] in self.loaded:
-                        print "DUPE! " + str(p['id'])
+                        # print "DUPE! " + str(p['id'])
+                        continue
                     self.loaded.add(p['id'])
-                    print 'post of type ' + p['type'] + '\tid: ' + str(p['id'])
+                    # print 'post of type ' + p['type'] + '\tid: ' + str(p['id'])
                     posts.append(PostModel.MakePostModel(p))
                     n += 1
                 i += 1
 
-        print 'retrieved ' + str(len(posts))
+        post_types = {}
+        for post in posts:
+            if not post_types.has_key(post.post_type):
+                post_types[post.post_type] = 0
+            post_types[post.post_type] += 1
+        print 'Retrieved %d posts from %s %s' % (len(posts), self.getName(), str(post_types))
         return posts, start + i
