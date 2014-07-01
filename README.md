@@ -10,7 +10,7 @@
 </ul>
 
 <h2>Binary Dependencies</h2>
-<p><a href="http://www.lcdf.org/gifsicle/">Gifsicle</a>, a really great command-line tool for manipulating GIF images, is used for parsing animated GIFs. If Gifsicle is not found in your PATH at runtime, then animated GIFs will not be displayed.</p>
+<p><a href="http://www.lcdf.org/gifsicle/">Gifsicle</a>, a really great command-line tool for manipulating GIF images, is used for parsing animated GIFs. If <code>gifsicle</code> is not found in your PATH at runtime, then animated GIFs will not be displayed.</p>
 
 <h2>Tumblr API Setup - IMPORTANT</h2>
 <p>Sorry! You have to get an API key from tumblr to request other user's tumblr post data. Maybe I will write a scraper to get around this in the future, but for now, you'll have to:</p>
