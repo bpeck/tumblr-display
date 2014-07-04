@@ -17,7 +17,7 @@ class MultiPhotoView(Drawable):
 
     # a rectangular sprite that displays a photo on screen for a certain amount of time
     class PhotoProp(Prop):
-        STATE_SCROLL_IN, STATE_DISPLAY, STATE_SCROLL_OUT, NUM_STATES = range(4)
+        STATE_SCROLL_IN, STATE_DISPLAY, STATE_SCROLL_OUT, STATE_DEAD, NUM_STATES = range(5)
         def __init__(self, images, w, h, state_listener):
             super(MultiPhotoView.PhotoProp, self).__init__()
 
@@ -41,7 +41,6 @@ class MultiPhotoView(Drawable):
                 self.pos = Vect2((0, -w))
 
             self.display_time = 0
-            self.done = False
 
             self._state = None
 
@@ -87,12 +86,16 @@ class MultiPhotoView(Drawable):
                     self.state = MultiPhotoView.PhotoProp.STATE_DISPLAY
             elif self.state == MultiPhotoView.PhotoProp.STATE_SCROLL_OUT:
                 if self.current_move_action.done:
-                    self.current_move_action = None
-                    self.done = True
                     self.current_anim_action.kill()
-                    self.state_listeners = []
                 if self.current_anim_action.done:
-                    self.current_anim_action = None
+                    self.state = MultiPhotoView.PhotoProp.STATE_DEAD
+
+        def onRemove(self):
+            self.image = None
+            self.frames = []
+            self.state_listeners = []
+            self.current_move_action = None
+            self.current_anim_action = None
 
     def __init__(self, blogModel, viewable_area):
         MultiPhotoView.rect = Rect(0, 0, viewable_area[0], viewable_area[1])
@@ -172,14 +175,12 @@ class MultiPhotoView(Drawable):
         if photo_prop == self.preload_after_prop_displays and state == MultiPhotoView.PhotoProp.STATE_DISPLAY:
             self.preload_images(5)
             self.preload_after_prop_displays = None
+        elif state == MultiPhotoView.PhotoProp.STATE_DEAD:    
+            photo_prop.onRemove()
+            self.photo_props.remove(photo_prop)
 
     def draw(self, display_screen, dT):
-        not_done = []
         for prop in self.photo_props:
             prop.update(dT)
-            if not prop.done:
-                prop.draw(display_screen)
-                not_done.append(prop)
-
-        self.photo_props = not_done
+            prop.draw(display_screen)
     
