@@ -6,7 +6,7 @@
 <ul>
 <li>pygame</li>
 <li>pytumblr</li>
-<li>Python Image Library (Pillow)</li>
+<li>Python Image Library (Pillow) built with JPEG, ZLIB(PNG,GIF) support</li>
 </ul>
 
 <h2>Binary Dependencies</h2>
