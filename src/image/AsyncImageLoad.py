@@ -23,6 +23,7 @@ def _downloadImage(url, worker_id):
 
     if pil_image.format == "GIF" and pil_image.info.has_key('duration'):
         if GIF_SUPPORT:
+            pil_image.close()
             # save to disk first, Pillow crashes if I try to access
             # animation info from pil_image
             scratch_dir = os.path.join('..', '_scratch')
@@ -35,10 +36,10 @@ def _downloadImage(url, worker_id):
             # unfortunately we can't count frames until we reload
             # from disk... :(
             num_frames = 0
-            pil_image = Image.open(scratch_path)
-            for i in ImageSequence.Iterator(pil_image):
+            scratch_file = Image.open(scratch_path)
+            for i in ImageSequence.Iterator(scratch_file):
                 num_frames += 1
-            pil_image.close()
+            scratch_file.close()
 
             # use gifsicle to explode into frames
             try:
@@ -65,20 +66,24 @@ def _downloadImage(url, worker_id):
                     scratch_file = os.path.join(scratch_dir, '%s.%03d' % \
                         (scratch_name, i))
                     frame = Image.open(scratch_file)
-                    frame = frame.convert('RGB')
-                    buffers.append(frame.tostring())
+                    rgb_frame = frame.convert('RGB')
+                    buffers.append(rgb_frame.tostring())
+                    rgb_frame.close()
                     frame.close()
             except Exception:
                 print "Failed to load " + url
                 return None, None, None
         else:
+            pil_image.close()
             return None, None, None
     else:
+        rgb_image = pil_image
         if pil_image.mode != 'RGB':
-            pil_image = pil_image.convert('RGB')
-        buff = pil_image.tostring()
+            rgb_image = pil_image.convert('RGB')
+        buff = rgb_image.tostring()
         buffers = [buff]
         pil_image.close()
+        rgb_image.close()
 
     return w, h, buffers
 
