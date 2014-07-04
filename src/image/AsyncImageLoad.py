@@ -145,6 +145,9 @@ try:
 except OSError:
     GIF_SUPPORT = False
 
+if not os.path.exists('../_scratch'):
+    os.mkdir('../_scratch')
+
 worker_done = False
 url_queue = multiprocessing.queues.SimpleQueue()
 img_buffer_queue = multiprocessing.queues.SimpleQueue()
