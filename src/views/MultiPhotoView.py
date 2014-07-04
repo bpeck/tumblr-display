@@ -87,8 +87,12 @@ class MultiPhotoView(Drawable):
                     self.state = MultiPhotoView.PhotoProp.STATE_DISPLAY
             elif self.state == MultiPhotoView.PhotoProp.STATE_SCROLL_OUT:
                 if self.current_move_action.done:
+                    self.current_move_action = None
                     self.done = True
                     self.current_anim_action.kill()
+                    self.state_listeners = []
+                if self.current_anim_action.done:
+                    self.current_anim_action = None
 
     def __init__(self, blogModel, viewable_area):
         MultiPhotoView.rect = Rect(0, 0, viewable_area[0], viewable_area[1])
@@ -178,5 +182,4 @@ class MultiPhotoView(Drawable):
                 not_done.append(prop)
 
         self.photo_props = not_done
-
     

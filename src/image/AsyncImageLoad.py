@@ -34,6 +34,7 @@ def _downloadImage(url, worker_id):
             pil_image = Image.open(scratch_path)
             for i in ImageSequence.Iterator(pil_image):
                 num_frames += 1
+            pil_image.close()
 
             cmd = 'gifsicle -w --colors=255 %s | gifsicle -w -U -e -o=%s' % \
                 (scratch_path, os.path.join(scratch_dir, scratch_name))
@@ -46,6 +47,7 @@ def _downloadImage(url, worker_id):
                     frame = Image.open(scratch_file)
                     frame = frame.convert('RGB')
                     buffers.append(frame.tostring())
+                    frame.close()
             except Exception:
                 return None, None, None
         else:
@@ -55,11 +57,18 @@ def _downloadImage(url, worker_id):
             pil_image = pil_image.convert('RGB')
         buff = pil_image.tostring()
         buffers = [buff]
+        pil_image.close()
 
     return w, h, buffers
 
 # This is a worker function that sits in it's own process
 def _worker(in_queue, out_queue, worker_id):
+    try:
+        import setproctitle
+        setproctitle.setproctitle("imageWorker")
+    except ImportError:
+        pass
+
     done = False
     while not done:
         if not in_queue.empty():

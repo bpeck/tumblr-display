@@ -37,6 +37,10 @@ class AnimDriver(object):
 
         return False
 
+    def onRemove(self):
+        self.obj = None
+        self.attr = None
+
 from maths.Vect2 import Vect2
 class Vect2AnimDriver(AnimDriver):
     def __init__(self, src_vec, dest_vec, t, ease_func):
@@ -100,7 +104,9 @@ class IterableAnimDriver(AnimDriver):
             else:
                 return True
 
-
         self.t = min(self.t + float(dT), self.total_time)
-
         return False
+
+    def onRemove(self):
+        super(IterableAnimDriver, self).onRemove()
+        self.iterable = None
