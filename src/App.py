@@ -9,7 +9,6 @@ from pygame.time import get_ticks
 from Settings import Settings
 from UI.ScreenManager import ScreenManager
 from UI.MainScreen import MainScreen
-from gifTest import gifScreen
 from image import AsyncImageLoad
 
 SLEEP_TIME = 8
