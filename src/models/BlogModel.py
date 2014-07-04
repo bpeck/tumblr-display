@@ -8,6 +8,9 @@ class BlogModel(object):
 
         blog_info = client.posts(self.account)
 
+        if blog_info.has_key('meta') and blog_info['meta']['status'] != 200:
+            raise Exception("Unable to connect to Tumblr API. Did you fill in your API OAUTH/SECRET in Settings.py?")
+
         self.name = blog_info['blog']['title']
         self.num_posts = blog_info['total_posts']
 

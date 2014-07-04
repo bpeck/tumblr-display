@@ -14,32 +14,52 @@ def _downloadImage(url, worker_id):
     buffers = []
     w, h = 0, 0
 
+    # this will grab an appropriate jpg/png/gif parser and decompress
+    # into a bitmap and store interally to a pil image
     parser = ImageFile.Parser()
-    # decompress to bitmap
     parser.feed(encoded_str)
     pil_image = parser.close()
     w, h = pil_image.size
 
     if pil_image.format == "GIF" and pil_image.info.has_key('duration'):
         if GIF_SUPPORT:
+            # save to disk first, Pillow crashes if I try to access
+            # animation info from pil_image
             scratch_dir = os.path.join('..', '_scratch')
             scratch_name = 'scratch%d' % worker_id
-            # save to disk and use gifsicle to explode into frames
             scratch_path = os.path.join(scratch_dir, scratch_name)
             scratch_file = open(scratch_path, 'w')
             scratch_file.write(encoded_str)
             scratch_file.close()
 
+            # unfortunately we can't count frames until we reload
+            # from disk... :(
             num_frames = 0
             pil_image = Image.open(scratch_path)
             for i in ImageSequence.Iterator(pil_image):
                 num_frames += 1
             pil_image.close()
 
-            cmd = 'gifsicle -w --colors=255 %s | gifsicle -w -U -e -o=%s' % \
-                (scratch_path, os.path.join(scratch_dir, scratch_name))
-            os.system(cmd)
+            # use gifsicle to explode into frames
+            try:
+                # gifsicle will not unoptimize images with complicated local
+                # color tables with "complex transparency", so we first blow
+                # away complex transparency with a giant color table.
+                cmd1 = ['gifsicle', '-w', '--colors=256', scratch_path]
+                p1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE)
+                # unoptimize (bake out transparency and previous frame deltas)
+                # and explode. We pipe in result of first process here
+                cmd2 = ['gifsicle', '-w', '-U', '-e', '-o=' + os.path.join(scratch_dir, scratch_name)]
+                p2 = subprocess.Popen(cmd2, stdin=p1.stdout)
+                p2.communicate()
+            except OSError:
+                print "gifsicle failed while exploding " + url
+                return None, None, None
+            except Exception as e:
+                print(e)
+                return None, None, None
 
+            # load frames into string buffers and return
             try:
                 for i in range(num_frames):
                     scratch_file = os.path.join(scratch_dir, '%s.%03d' % \
@@ -49,6 +69,7 @@ def _downloadImage(url, worker_id):
                     buffers.append(frame.tostring())
                     frame.close()
             except Exception:
+                print "Failed to load " + url
                 return None, None, None
         else:
             return None, None, None
@@ -100,7 +121,6 @@ def stop():
 def load(url, callback):
     if downloader_process.is_alive():
         on_load_callbacks[url] = callback
-        #print('requesting async img load ' + url + " (" + str(w) + ", " + str(h) + ")")
         url_queue.put(url)
     else:
         assert(False)
@@ -141,8 +161,10 @@ def update():
 # detect GIF support
 GIF_SUPPORT = True
 try:
-    subprocess.call(["gifsicle", '--version'])
+    with open(os.devnull, 'w') as dev_null:
+        subprocess.call(["gifsicle", '--version'], stdout=dev_null, stderr=dev_null)
 except OSError:
+    print "Warning: gifsicle not found in PATH, GIF support disabled."
     GIF_SUPPORT = False
 
 if not os.path.exists('../_scratch'):

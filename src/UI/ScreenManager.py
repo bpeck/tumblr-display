@@ -1,7 +1,7 @@
 import pygame.display
 
 class ScreenManager(object):
-    def __init__(self, display_screen):
+    def __init__(self, display_screen):    
         self.screens = []
         self.display_screen = display_screen
 

@@ -22,14 +22,19 @@ class App(object):
         self.last_update = get_ticks()
 
         pygame.display.set_caption(Settings.WINDOW_TITLE)
-        screen = pygame.display.set_mode( \
+        sdl_screen = pygame.display.set_mode( \
             (Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT), Settings.WINDOW_FLAGS)
+        self.screen_manager = ScreenManager(sdl_screen)
 
-        self.screen_manager = ScreenManager(screen)
-
-        self.screen_manager.pushScreen(MainScreen())
-
-        self.mainLoop()
+        try:
+            main_screen = MainScreen()
+        except Exception as e:
+            print(e)
+            self.done = True
+        else:
+            self.screen_manager.pushScreen(main_screen)
+        finally:
+            self.mainLoop()
     
     def mainLoop(self):
         try:
@@ -39,7 +44,7 @@ class App(object):
                         self.done = True
                         break
                     elif e.type == KEYDOWN and \
-                        (e.key == pygame.K_ESCAPE or e.key == pygame.K_Q):
+                        (e.key == pygame.K_ESCAPE or e.key == pygame.K_q):
                        self.done = True
                     elif e.type == KEYDOWN or e.type == KEYUP:
                         self.screen_manager.onKeyboardEvent(e)
@@ -65,5 +70,5 @@ class App(object):
         self.tearDown()
 
     def tearDown(self):
-        print "Tearing down " + Settings.WINDOW_TITLE
+        print "Tearing down " + Settings.WINDOW_TITLE + "..."
         AsyncImageLoad.stop()
