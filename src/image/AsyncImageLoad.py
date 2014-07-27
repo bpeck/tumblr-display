@@ -106,11 +106,15 @@ def _worker(in_queue, out_queue, worker_id):
                 import sys
                 #sys.exit()
             else:
-                url = obj
+                url, batch_id = obj
                 
                 w, h, buffers = _downloadImage(url, worker_id)
                 if w != None:
-                    out_queue.put((url, w, h, buffers))
+                    #print "putting loaded buffers [%d] on out queue" % len(buffers)
+                    out_queue.put((url, batch_id, w, h, buffers))
+                else:
+                    #print "putting blank buffer on out queue."
+                    out_queue.put((url, batch_id, 0, 0, []))
         pygame.time.wait(SLEEP_TIME)
 
 def start():
@@ -123,10 +127,10 @@ def stop():
     downloader_process.terminate()
     worker_done = True
 
-def load(url, callback):
+def load(url, callback, batch_id):
     if downloader_process.is_alive():
         on_load_callbacks[url] = callback
-        url_queue.put(url)
+        url_queue.put((url, batch_id))
     else:
         assert(False)
 
@@ -137,13 +141,13 @@ def loadPropImage(url, prop):
 
     load(url, callback)
 
-def createSurfaces(buffers, w, h, callback):
+def createSurfaces(buffers, w, h, callback, batch_id):
     images = []
     for buff in buffers:
         image = pygame.image.frombuffer(buff, (w, h), "RGB")
         images.append(image)
     if callback:
-        callback(images, w, h)
+        callback(batch_id, images, w, h)
 
 _ticks_to_wait_in_between_loads = 4
 _ticks_to_wait = 0
@@ -156,9 +160,9 @@ def update():
     global _ticks_to_wait
     if _ticks_to_wait <= 0:
         if not img_buffer_queue.empty():
-            url, w, h, buffers = img_buffer_queue.get()
+            url, batch_id, w, h, buffers = img_buffer_queue.get()
             callback = on_load_callbacks.pop(url, None)
-            createSurfaces(buffers, w, h, callback)
+            createSurfaces(buffers, w, h, callback, batch_id)
             _ticks_to_wait = _ticks_to_wait_in_between_loads
     else:
         _ticks_to_wait -= 1

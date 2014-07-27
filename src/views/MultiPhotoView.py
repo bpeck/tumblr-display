@@ -13,7 +13,7 @@ from maths import Ease
 
 class MultiPhotoView(Drawable):
     SCROLL_SPEED = 1.0
-    DISPLAY_SPEED = 3.0
+    DISPLAY_SPEED = 4.0
 
     # a rectangular sprite that displays a photo on screen for a certain amount of time
     class PhotoProp(Prop):
@@ -101,35 +101,47 @@ class MultiPhotoView(Drawable):
         MultiPhotoView.rect = Rect(0, 0, viewable_area[0], viewable_area[1])
         self.model = blogModel
         self.post = 0
-        # while the view isn't ready, the controller will not
-        # ask it to increment posts. So during an image load
-        # we will hold on the current post until the batch is done 
-        # processing in
-        self.ready = False
+
         self.initialized = False
         # we  will hold on to ref of a photo prop that has just been
         # created, and once it reaches display state we trigger a preload
+        self.preload_batch_progress = {}
+        self.preload_batch_id = 0
         self.preload_after_prop_displays = None
+        self.waiting_on_batch = None
 
         self.img_queue = []
         self.last_cached_post_idx = self.post
 
         self.photo_props = []
-        self.preload_images(5)
+        self.preload_posts(2)
 
     def isReady(self):
-        return self.ready
+        return self.waiting_on_batch == None
 
-    def preload_images(self, look_ahead = 0):
-        self.ready = False
-        def callback(images, w, h):
-            self.img_queue.append((images, w, h))
-            if not self.initialized:
-                self.initialized = True
-                self.setPost(self.post)
-        def lastInBatchCallback(images, w, h):
-            callback(images, w, h)
-            self.ready = True
+    def preload_posts(self, look_ahead = 0):
+        self.preload_batch_id = (self.preload_batch_id + 1) % 99999
+        if not self.waiting_on_batch:
+            self.waiting_on_batch = self.preload_batch_id
+
+        def callback(batch_id, images, w, h):
+            if len(images) > 0:
+                self.img_queue.append((images, w, h))
+                if not self.initialized:
+                    self.initialized = True
+                    self.setPost(self.post)
+
+            self.preload_batch_progress[batch_id] -= 1
+
+            print "BATCH %d PROGRESS: %d REMAIN" % (batch_id, self.preload_batch_progress[batch_id])
+
+            if self.preload_batch_progress[batch_id] <= 0:
+                print "FINISHED LOADING BATCH %d" % batch_id
+                if self.waiting_on_batch == batch_id:
+                    print "...WAS WAITING ON THIS BATCH"
+                    self.waiting_on_batch = None
+
+                del self.preload_batch_progress[batch_id]
 
         start, end = self.last_cached_post_idx, self.last_cached_post_idx + look_ahead
         posts, self.last_cached_post_idx = self.model.getPosts(self.last_cached_post_idx, self.last_cached_post_idx + look_ahead)
@@ -137,16 +149,11 @@ class MultiPhotoView(Drawable):
 
         # load each image in the batch. On the last image of the batch,
         # set the view's ready flag to true
-        num_photos = sum(map(lambda x: x.getNumPhotos(), posts))
-        photo_num = 0
+        num_photos_to_load = sum(map(lambda x: x.getNumPhotos(), posts))
+        self.preload_batch_progress[self.preload_batch_id] = num_photos_to_load
         for i in range(len(posts)):
             for url in posts[i].getPhotos(None, self.rect.h):
-                fCallback = callback
-                if photo_num == num_photos - 1:
-                    fCallback = lastInBatchCallback
-                AsyncImageLoad.load(url, fCallback)
-                photo_num += 1
-
+                AsyncImageLoad.load(url, callback, self.preload_batch_id)
 
         self.last_cached_post_idx += look_ahead + 1
 
@@ -173,7 +180,7 @@ class MultiPhotoView(Drawable):
 
     def onPhotoPropStateChange(self, photo_prop, state):
         if photo_prop == self.preload_after_prop_displays and state == MultiPhotoView.PhotoProp.STATE_DISPLAY:
-            self.preload_images(5)
+            self.preload_posts(5)
             self.preload_after_prop_displays = None
         elif state == MultiPhotoView.PhotoProp.STATE_DEAD:    
             photo_prop.onRemove()
@@ -182,5 +189,6 @@ class MultiPhotoView(Drawable):
     def draw(self, display_screen, dT):
         for prop in self.photo_props:
             prop.update(dT)
+        for prop in self.photo_props:
             prop.draw(display_screen)
     
