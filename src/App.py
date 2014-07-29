@@ -1,5 +1,5 @@
 # py imports
-import os, sys
+import os, sys, traceback
 
 # pygame imports
 import pygame
@@ -29,7 +29,7 @@ class App(object):
         try:
             main_screen = MainScreen()
         except Exception as e:
-            print(e)
+            traceback.print_exc(file=sys.stdout)
             self.done = True
         else:
             self.screen_manager.pushScreen(main_screen)

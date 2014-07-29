@@ -1,7 +1,7 @@
 from Screen import Screen
 import pytumblr
 from Settings import Settings
-from views.MultiPhotoView import MultiPhotoView
+from views.BlogView import BlogView
 from models.BlogModel import BlogModel
 from controllers.BlogCrawlController import BlogCrawlController
 from pygame import display
@@ -17,7 +17,7 @@ class MainScreen(Screen):
         client = pytumblr.TumblrRestClient(Settings.OAUTH_CONSUMER, Settings.SECRET)
 
         self.model = BlogModel(client, blog_name)
-        self.view = MultiPhotoView(self.model, viewable_area)
+        self.view = BlogView(self.model, viewable_area)
         self.controller = BlogCrawlController(self.view)
 
         self.insertDrawable(self.view)
