@@ -17,14 +17,14 @@ class App(object):
     
     def __init__(self):
         self.done = False
+        self.fullscreen = None
         
         self.tick_rate = Settings.TICK_RATE
         self.last_update = get_ticks()
 
         pygame.display.set_caption(Settings.WINDOW_TITLE)
-        sdl_screen = pygame.display.set_mode( \
-            (Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT), Settings.WINDOW_FLAGS)
-        self.screen_manager = ScreenManager(sdl_screen)
+        self.screen_manager = ScreenManager()
+        self.setFullscreen(False)
 
         try:
             main_screen = MainScreen()
@@ -35,6 +35,19 @@ class App(object):
             self.screen_manager.pushScreen(main_screen)
         finally:
             self.mainLoop()
+
+    def setFullscreen(self, fullscreen):
+        if fullscreen == self.fullscreen:
+            return
+        if fullscreen:
+            sdl_screen = pygame.display.set_mode( \
+                (0, 0), pygame.FULLSCREEN | pygame.NOFRAME)
+        else:
+            sdl_screen = pygame.display.set_mode( \
+                (Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT), Settings.WINDOW_FLAGS)
+        self.fullscreen = fullscreen
+
+        self.screen_manager.setScreen(sdl_screen)
     
     def mainLoop(self):
         try:
@@ -46,6 +59,9 @@ class App(object):
                     elif e.type == KEYDOWN and \
                         (e.key == pygame.K_ESCAPE or e.key == pygame.K_q):
                        self.done = True
+                    elif e.type == KEYDOWN and \
+                        e.key == pygame.K_f:
+                        self.setFullscreen(not self.fullscreen)
                     elif e.type == KEYDOWN or e.type == KEYUP:
                         self.screen_manager.onKeyboardEvent(e)
                     elif e.type  == MOUSEMOTION or e.type  ==  MOUSEBUTTONDOWN or e.type == MOUSEBUTTONUP:

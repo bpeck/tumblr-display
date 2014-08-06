@@ -1,17 +1,26 @@
 import pygame.display
 
-class ScreenManager(object):
-    def __init__(self, display_screen):    
-        self.screens = []
-        self.display_screen = display_screen
 
-    def onTick(self, dT):
-        self.display_screen.fill((0,0,0,0))
+class ScreenManager(object):
+    display_screen = None
+
+    def __init__(self):    
+        self.screens = []
+    
+    def setScreen(self, screen):
+        ScreenManager.display_screen = screen
 
         for screen in self.screens:
-            screen.onTick(self.display_screen, dT)
+            screen.onDisplayChange(ScreenManager.display_screen)
 
-        pygame.display.update()
+    def onTick(self, dT):
+        if ScreenManager.display_screen:
+            ScreenManager.display_screen.fill((0,0,0,0))
+
+            for screen in self.screens:
+                screen.onTick(ScreenManager.display_screen, dT)
+
+            pygame.display.update()
 
     def onMouseEvent(self, event):
         for screen in self.screens:

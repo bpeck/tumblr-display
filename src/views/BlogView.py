@@ -8,8 +8,8 @@ class BlogView(ImageView):
     SCROLL_SPEED = 1.0
     DISPLAY_SPEED = 4.0
 
-    def __init__(self, blogModel, viewable_area):
-        super(BlogView, self).__init__(viewable_area)
+    def __init__(self, blogModel):
+        super(BlogView, self).__init__()
 
         self.model = blogModel
         self.post = 0

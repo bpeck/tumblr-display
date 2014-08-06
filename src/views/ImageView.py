@@ -2,10 +2,11 @@ from pygame import Rect
 
 from Drawable import Drawable
 from views.ImageProp import ImageProp
+from UI.ScreenManager import ScreenManager
 
 class ImageView(Drawable):
-    def __init__(self, viewable_area):
-        self.rect = Rect(0, 0, viewable_area[0], viewable_area[1])
+    def __init__(self):
+        self.rect = ScreenManager.display_screen.get_rect()
         self.image_props = []
 
     def setImage(self, image_prop, scroll_speed=None, display_speed=None):

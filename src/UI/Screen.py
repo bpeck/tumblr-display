@@ -6,6 +6,9 @@ class Screen(object):
         self.drawables = []
         self.controllers = []
 
+    def onDisplayChange(self, display_screen):
+        pass
+
     def getName(self):
         return self.name
 
