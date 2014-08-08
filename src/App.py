@@ -45,6 +45,7 @@ class App(object):
         else:
             sdl_screen = pygame.display.set_mode( \
                 (Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT), Settings.WINDOW_FLAGS)
+        pygame.mouse.set_visible(not fullscreen)
         self.fullscreen = fullscreen
 
         self.screen_manager.setScreen(sdl_screen)
