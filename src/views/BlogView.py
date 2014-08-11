@@ -72,16 +72,19 @@ class BlogView(ImageView):
         return not self.preload_after_prop_displays and len(self.img_queue) < 5
 
     def incPost(self):
-        self.setPost(self.post + 1)
+        return self.setPost(self.post + 1)
 
     def setPost(self, idx):
-        images, w, h = self.img_queue.pop(0)
-        image_prop = ImageProp(images, w, h, self.rect.w, self.rect.h)
-        self.setImage(image_prop, BlogView.SCROLL_SPEED, BlogView.DISPLAY_SPEED)
+        if len(self.img_queue) > 0:
+            images, w, h = self.img_queue.pop(0)
+            image_prop = ImageProp(images, w, h, self.rect.w, self.rect.h)
+            self.setImage(image_prop, BlogView.SCROLL_SPEED, BlogView.DISPLAY_SPEED)
 
-        self.post = idx
-        if self.preload_needed():
-            self.preload_after_prop_displays = image_prop
+            self.post = idx
+            if self.preload_needed():
+                self.preload_after_prop_displays = image_prop
+            return True
+        return False
 
     def onImagePropStateChange(self, image_prop, state):
         if image_prop == self.preload_after_prop_displays and state == ImageProp.STATE_DISPLAY:

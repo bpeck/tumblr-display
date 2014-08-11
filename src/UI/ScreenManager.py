@@ -4,8 +4,9 @@ import pygame.display
 class ScreenManager(object):
     display_screen = None
 
-    def __init__(self):    
+    def __init__(self, display_info):    
         self.screens = []
+        self.desktop_resolution = (display_info.current_w, display_info.current_h)
     
     def setScreen(self, screen):
         ScreenManager.display_screen = screen

@@ -13,11 +13,13 @@ class ImageProp(Prop):
     STATE_SCROLL_IN, STATE_DISPLAY, STATE_SCROLL_OUT, STATE_DEAD, NUM_STATES = range(5)
     def __init__(self, images, w, h, parent_view_w=None, parent_view_h=None):
         super(ImageProp, self).__init__()
-        self.desired_w = parent_view_w
-        self.desired_h = parent_view_h
+        self.original_w, self.original_h = w, h
+        self.original_frames = images
+        self.desired_w, self.desired_h = parent_view_w, parent_view_h
         self.state_listeners = []
         if self.desired_w and self.desired_h:
-            scale = min( float(self.desired_w) / float(w), float(self.desired_h) / float(h))
+            scale = min( float(self.desired_w) / float(self.original_w), \
+                         float(self.desired_h) / float(self.original_h))
             new_w = int(float(w) * scale)
             new_h = int(float(h) * scale)
 
@@ -43,6 +45,29 @@ class ImageProp(Prop):
         self._state = new_state
         for callback in self.state_listeners:
             callback(self, new_state)
+
+    def resize(self, w, h):
+        print "resizing prop to %d, %d" % (w,h)
+        self.desired_w = w
+        self.desired_h = h
+        
+        scale = min( float(self.desired_w) / float(self.original_w), \
+                     float(self.desired_h) / float(self.original_h))
+        new_w = int(float(self.original_w) * scale)
+        new_h = int(float(self.original_h) * scale)
+
+        new_frames = []
+        for frame in self.original_frames:
+            new_frames.append(transform.smoothscale(frame, (new_w, new_h)))
+        self.frames = new_frames
+        self.rect = Rect(0, 0, new_w, new_h)
+
+        # re-center prop in viewport
+        self.pos.x = (self.desired_w - self.rect.w) * 0.5
+
+        # update the frames reference in the animation action so we display the new frames
+        if self.current_anim_action:
+            self.current_anim_action.iterable = self.frames
 
     # debug draw func
     # def draw(self, display_screen, dT=None):
@@ -83,6 +108,7 @@ class ImageProp(Prop):
 
     def onRemove(self):
         self.image = None
+        self.original_frames = []
         self.frames = []
         self.state_listeners = []
         self.current_move_action = None

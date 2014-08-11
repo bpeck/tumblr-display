@@ -28,4 +28,9 @@ class ImageView(Drawable):
             prop.update(dT)
         for prop in self.image_props:
             prop.draw(display_screen)
+
+    def onResize(self, rect):
+        self.rect = rect
+        for prop in self.image_props:
+            prop.resize(rect.w, rect.h)
     

@@ -22,4 +22,4 @@ class MainScreen(Screen):
         self.controllers.append(self.controller)
 
     def onDisplayChange(self, display_screen):
-        self.view.rect = display_screen.get_rect()
+        self.view.onResize(display_screen.get_rect())

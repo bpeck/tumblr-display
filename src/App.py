@@ -23,7 +23,9 @@ class App(object):
         self.last_update = get_ticks()
 
         pygame.display.set_caption(Settings.WINDOW_TITLE)
-        self.screen_manager = ScreenManager()
+        
+        self.screen_manager = ScreenManager(pygame.display.Info())
+
         self.setFullscreen(False)
 
         try:
@@ -39,12 +41,14 @@ class App(object):
     def setFullscreen(self, fullscreen):
         if fullscreen == self.fullscreen:
             return
+        sdl_screen = None
         if fullscreen:
             sdl_screen = pygame.display.set_mode( \
-                (0, 0), pygame.FULLSCREEN | pygame.NOFRAME)
+                self.screen_manager.desktop_resolution, pygame.FULLSCREEN)
         else:
             sdl_screen = pygame.display.set_mode( \
                 (Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT), Settings.WINDOW_FLAGS)
+
         pygame.mouse.set_visible(not fullscreen)
         self.fullscreen = fullscreen
 
