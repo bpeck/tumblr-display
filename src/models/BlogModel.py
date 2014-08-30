@@ -1,12 +1,15 @@
+from AbstractRootModel import AbstractRootModel
+import pytumblr
 import PostModel
+from Settings import Settings
 
-class BlogModel(object):
+class BlogModel(AbstractRootModel):
 
-    def __init__(self, client, account):
-        self.client = client
+    def __init__(self, account):
+        self.client = pytumblr.TumblrRestClient(Settings.OAUTH_CONSUMER, Settings.SECRET)
         self.account = account
 
-        blog_info = client.posts(self.account)
+        blog_info = self.client.posts(self.account)
 
         if blog_info.has_key('meta') and blog_info['meta']['status'] != 200:
             raise Exception("Unable to connect to Tumblr API. Did you fill in your API OAUTH/SECRET in Settings.py?")
@@ -18,8 +21,23 @@ class BlogModel(object):
 
         print "Created model for blog " + self.getName()
 
+    """ Overrides AbstractRootModel """
     def getName(self):
         return self.name
+
+    """ Overrides AbstractRootModel """
+    def getRootPath(self):
+        return self.account
+
+    """ Overrides AbstractRootModel """
+    def getInfo(self):
+        info = {}
+        info['general_desc'] = 'Displaying a Tumblr!'
+        info['blog_name'] = self.name
+        return info
+
+    def getInfoTemplatePath(self):
+        return 'blogInfo.html'
 
     def getNumPosts(self):
         return self.num_posts

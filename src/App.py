@@ -10,12 +10,14 @@ from Settings import Settings
 from UI.ScreenManager import ScreenManager
 from UI.MainScreen import MainScreen
 from image import AsyncImageLoad
+from web import Backend as WebInterface
 
 SLEEP_TIME = 8
 
 class App(object):
     
     def __init__(self):
+
         self.done = False
         self.fullscreen = None
         
@@ -28,15 +30,7 @@ class App(object):
 
         self.setFullscreen(False)
 
-        try:
-            main_screen = MainScreen()
-        except Exception as e:
-            traceback.print_exc(file=sys.stdout)
-            self.done = True
-        else:
-            self.screen_manager.pushScreen(main_screen)
-        finally:
-            self.mainLoop()
+        WebInterface.start()
 
     def setFullscreen(self, fullscreen):
         if fullscreen == self.fullscreen:
@@ -52,7 +46,7 @@ class App(object):
         pygame.mouse.set_visible(not fullscreen)
         self.fullscreen = fullscreen
 
-        self.screen_manager.setScreen(sdl_screen)
+        self.screen_manager.setSDLScreen(sdl_screen) 
     
     def mainLoop(self):
         try:
@@ -78,6 +72,11 @@ class App(object):
                         dT = t - self.last_update
 
                         AsyncImageLoad.update()
+
+                        backend_cmd = WebInterface.poll()
+                        if backend_cmd:
+                            print 'recv command from web'
+                            self.app_controller.handleCommand(backend_cmd)
                         
                         self.screen_manager.onTick(dT)
 
@@ -86,10 +85,12 @@ class App(object):
                 pygame.time.wait(SLEEP_TIME)
         except:
             import traceback
-            traceback.print_exc()            
-        
-        self.tearDown()
+            traceback.print_exc()
+            self.done = True
+        finally:
+            self.tearDown()
 
     def tearDown(self):
         print "Tearing down " + Settings.WINDOW_TITLE + "..."
+        WebInterface.stop()
         AsyncImageLoad.stop()

@@ -1,4 +1,7 @@
-class BlogCrawlController(object):
+from AbstractRootController import AbstractRootController
+from controllers.RootModelCommands import NextCommand
+
+class BlogCrawlController(AbstractRootController):
     
     def __init__(self, view):
         self.view = view
@@ -14,3 +17,15 @@ class BlogCrawlController(object):
             if self.t <= 0:
                 self.view.incPost()
                 self.t = self.period
+
+    """ Overrides AbstractRootController """
+    def handleCommand(self, command):
+        if isinstance(command, NextCommand):
+            self.t = 0
+    
+    """ Overrides AbstractRootController """
+    def getInfo(self):
+        info = {}
+        p = float(self.period) / 1000.0
+        info['how'] = "Incrementing posts every %.1f sec." % p
+        return info

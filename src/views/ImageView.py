@@ -1,10 +1,11 @@
 from pygame import Rect
 
+from AbstractRootView import AbstractRootView
 from Drawable import Drawable
 from views.ImageProp import ImageProp
 from UI.ScreenManager import ScreenManager
 
-class ImageView(Drawable):
+class ImageView(Drawable, AbstractRootView):
     def __init__(self):
         self.rect = ScreenManager.display_screen.get_rect()
         self.image_props = []
@@ -34,3 +35,7 @@ class ImageView(Drawable):
         for prop in self.image_props:
             prop.resize(rect.w, rect.h)
     
+    """ Overrides AbstractRootView """
+    def getInfo(self):
+        info = {}
+        info['desc'] = "Displaying an image"

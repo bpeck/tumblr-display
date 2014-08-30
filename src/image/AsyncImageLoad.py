@@ -117,9 +117,6 @@ def _worker(in_queue, out_queue, worker_id):
                     out_queue.put((url, batch_id, 0, 0, []))
         pygame.time.wait(SLEEP_TIME)
 
-def start():
-    downloader_process.start()
-
 def stop():
     print "Stopping async image download worker"
     global worker_done
@@ -188,4 +185,4 @@ on_load_callbacks = {}
 downloader_process = multiprocessing.Process(None, _worker, \
     "async image load worker", (url_queue, img_buffer_queue, 1))
 
-start()
+downloader_process.start()

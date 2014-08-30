@@ -27,6 +27,19 @@ class BlogView(ImageView):
 
         self.preload_posts(2)
 
+    """ Overrides AbstractRootView """
+    def getInfo(self):
+        info = {} 
+        if self.waiting_on_batch:
+            info['status'] = "Fetching additional posts..."
+            info['status_desc'] = "There are %d photos left to in this prefetch batch." % self.preload_batch_progress[self.waiting_on_batch]
+        else:
+            info['status'] = "Displaying post."
+            info['status_desc'] = ""
+        info['queue_size'] = str(len(self.img_queue))
+        info['post_num'] =  self.post
+        return info
+
     def isReady(self):
         return self.waiting_on_batch == None
 

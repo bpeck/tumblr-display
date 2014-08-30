@@ -6,6 +6,12 @@ class Screen(object):
         self.drawables = []
         self.controllers = []
 
+    def clearDisplay(self):
+        for i in range(len(self.controllers)):
+            self.controllers.pop()
+        for i in range(len(self.drawables)):
+            self.drawables.pop()
+
     def onDisplayChange(self, display_screen):
         pass
 
@@ -33,3 +39,9 @@ class Screen(object):
 
     def removeDrawable(self, drawable):
         self.drawables.remove(drawable)
+
+    def addController(self, controller):
+        self.controllers.append(controller)
+
+    def removeController(self, controller):
+        self.controllers.remove(controller)

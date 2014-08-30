@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div data-role="page" id="index">
+    <div data-role="header" data-id="header1" data-position="fixed">
+      <h1>PiFrame@{{ip}}:{{port}}</h1>
+    </div>
+    <div role="main" class="ui-content">
+      <div data-role="collapsibleset" data-theme="a" data-content-theme="a" data-inset="false">
+        <div id='info' data-role="collapsible" data-collapsed-icon="eye" data-expanded-icon="eye">
+          <h3>Info
+            <span style="float:right" class="button-span">
+              <a href="#" data-role="button" data-inline='true' data-icon='refresh' id="refresh-btn" data-iconpos="notext" class="details"></a>
+            </span>
+          </h3>
+          <div id="info-content">
+          </div>
+        </div>
+        <div data-role="collapsible" data-collapsed-icon="edit" data-expanded-icon="edit">
+          <h3>Commands</h3>
+            
+           <div data-role="controlgroup">
+            <div class="ui-btn ui-corner-all modifier-btn" id="PrevBtn" cmd="prev">Previous</div>
+            <div class="ui-btn ui-corner-all modifier-btn" id="NextBtn" cmd="next">Next</div>
+          </div>
+            
+        </div>
+        <div data-role="collapsible" data-collapsed-icon="gear" data-expanded-icon="gear">
+          <h3>Change</h3>
+          <div class="ui-field-contain">
+            <select name="select_model_type" id="model_type" data-native-menu="false">
+                <option value="tumblr">Tumblr</option>
+            </select>
+          </div>
+          <input type="text" data-clear-btn="true" name="text-display-root" id="root_path" value="">
+          <div class="ui-btn ui-corner-all modifier-btn" id="model-change-btn">Submit</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<style>
+.button-span {
+    position: absolute;
+    right: 0;
+    margin-top: -5px !important;
+    margin-right: 6px !important;
+}
+
+.button-span .ui-btn .ui-btn-inner {
+    padding-left: 0 !important;
+}
+</style>
+
+<script>
+$("[data-role='collapsible']").collapsible({
+
+    collapse: function( event, ui ) {
+        $(this).children().next().slideUp(150);
+    },
+    expand: function( event, ui ) {
+        $(this).children().next().hide();
+        $(this).children().next().slideDown(150);
+    }
+
+});
+
+// refresh info ajax
+function refresh_info (immediate) {
+  if (!immediate) {
+    $('#info').slideUp(200);
+  }
+  var startTime = Date.now();
+  $.getJSON( "/", { action: "refresh-info" } )
+    .done(function( data ) {
+      console.log(data)
+      // make sure the info div has fully collapsed before setting new data
+      var delay = Math.max(0, 200 - (Date.now() - startTime))
+      if (immediate) {
+        delay = 0;
+      }
+      window.setTimeout(function() {
+        $( "#info-content" ).empty();
+        $( "#info-content" ).html(data.html);
+        $( "#info-list" ).listview()
+      });
+
+      if (!immediate) {
+        // wait a bit before expanding again to reveal new info
+        delay = Math.max(0, 400 - (Date.now() - startTime))
+        window.setTimeout(function() {$('#info').slideDown()}, delay);
+      }
+    });
+};
+
+// refresh button event function
+$(document).on('pagebeforeshow', '#index',function(e){ 
+    $('#refresh-btn').bind('click', function (e) {   
+        refresh_info(false);            
+        e.stopPropagation();   
+        e.stopImmediatePropagation();
+    });
+});
+
+$('.modifier-btn').click( function() {
+  var cmd = $(this).attr("cmd");
+  var data = {
+    command: cmd
+  };
+
+  console.log(cmd)
+  $.ajax({
+    type : "POST",
+    url : "/",
+    data: JSON.stringify(data, null, '\t'),
+    contentType: 'application/json;charset=UTF-8',
+    success: function(result) {
+      //console.log(result);
+    }
+  });
+});
+
+$('#model-change-btn').click( function() {
+  var cmd = $(this).attr("cmd");
+  var data = {
+    command : "set_model",
+    model_type : $( "#model_type" ).val(),
+    root_path : $( "#root_path" ).val(),
+  };
+
+  console.log(cmd)
+  $.ajax({
+    type : "POST",
+    url : "/",
+    data: JSON.stringify(data, null, '\t'),
+    contentType: 'application/json;charset=UTF-8',
+    success: function(result) {
+      //console.log(result);
+    }
+  });
+});
+</script>
+{% endblock %}
