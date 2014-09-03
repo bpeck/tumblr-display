@@ -32,15 +32,15 @@ def parseCommandString(http_args):
             return None
 
 class Backend(object):
-    def __init__(self, command_queue, info_queue, host='localhost', port=8000, debug=True):
+    def __init__(self, command_queue, info_queue, flask_app=None, host='localhost', port=8000, debug=True):
         self.host = host
         self.port = port
+        self.debug = debug
         self.command_queue = command_queue
         self.info_queue = info_queue
-        self.flask_app = Flask('web')
-        self.flask_app.add_url_rule('/', "handleRequest", self.handleRequest, methods=['GET', 'POST'])
-        self.flask_app.add_url_rule('/shutdown', "handleShutdownRequest", self.handleShutdownRequest, methods=['GET', 'POST'])
-        self.flask_app.run(host=host, port=port, debug=debug, use_reloader=False)
+        self.flask_app = flask_app or Flask('web')
+        flask_app.add_url_rule('/', "handleRequest", self.handleRequest, methods=['GET', 'POST'])
+        flask_app.add_url_rule('/shutdown', "handleShutdownRequest", self.handleShutdownRequest, methods=['GET', 'POST'])
     
     def handleRequest(self):
         ret = ""
@@ -81,7 +81,8 @@ class Backend(object):
 
 def _worker(command_queue, info_queue):
     print "Starting up web interface worker"
-    Backend(command_queue, info_queue, HOST, PORT)
+    b = Backend(command_queue, info_queue, HOST, PORT)
+    b.flask_app.run(host=b.host, port=b.port, debug=b.debug, use_reloader=False)
     print "Web interface worker stopped."
 
 def stop():
