@@ -1,11 +1,15 @@
+import os
 import multiprocessing
 import multiprocessing.queues
 import Queue
-from flask import Flask
-from flask import request
-from flask import render_template
-from flask import url_for
-from flask import jsonify
+
+import json
+
+import tornado.ioloop
+import tornado.web
+import tornado.template
+
+import web
 
 from controllers.RootModelCommands import GetInfoCommand, NextCommand, PrevCommand, SetModelRootCommand, SetModelTypeCommand
 
@@ -31,66 +35,55 @@ def parseCommandString(http_args):
         else:
             return None
 
-class Backend(object):
-    def __init__(self, command_queue, info_queue, flask_app=None, host='localhost', port=8000, debug=True):
-        self.host = host
-        self.port = port
-        self.debug = debug
-        self.command_queue = command_queue
-        self.info_queue = info_queue
-        self.flask_app = flask_app or Flask('web')
-        flask_app.add_url_rule('/', "handleRequest", self.handleRequest, methods=['GET', 'POST'])
-        flask_app.add_url_rule('/shutdown', "handleShutdownRequest", self.handleShutdownRequest, methods=['GET', 'POST'])
-    
-    def handleRequest(self):
-        ret = ""
-        # handle AJAX command POST request
-        if request.method == 'POST':            
-            cmd = parseCommandString(request.json)
-            if cmd:
-                self.command_queue.put(cmd)
-                print "Parsed a [%s] command" % cmd.desc
-            else:
-                print "Could not parse a command from " + str(request.json)
+static_path = os.path.realpath(os.path.normpath(os.path.join(web.__file__, '..')))
+
+class MainHandler(tornado.web.RequestHandler):
+    def get(self):
+        if self.get_argument('action', None) == 'refresh-info':
+            info = {}
+            try:
+                command_queue.put(GetInfoCommand())
+                template_filename, info_context = info_queue.get(True, 5)
+                info['html'] = self.render_string(template_filename, **info_context)                    
+            except Queue.Empty:
+                info['html'] = "<p><strong>Could not refresh. Please try again.</storng></p>"
+            finally:
+                info['success'] = True
+                info['content_type'] = 'application/json'
+                self.write(json.dumps(info))
         else:
-            # handle AJAX info GET request
-            if request.args.get('action', None) == 'refresh-info':
-                info = {}
-                try:
-                    self.command_queue.put(GetInfoCommand())
-                    template_filename, info_context = self.info_queue.get(True, 5)
-                    info['html'] = render_template(template_filename, **info_context)                    
-                except Queue.Empty:
-                    info['html'] = "<p><strong>Could not refresh. Please try again.</storng></p>"
-                finally:
-                    return jsonify(info)
-            else:
-                return render_template('index.html', ip=self.host, port=self.port)
+            self.render(os.path.join(static_path, "templates", "index.html"), static_url=self.static_url, ip=HOST, port=str(PORT))
 
-        return ret
+    def post(self):
+        data = json.loads(self.request.body)
+        cmd = parseCommandString(data)
+        if cmd:
+            command_queue.put(cmd)
+            print "Parsed a [%s] command" % cmd.desc
+        else:
+            print "Could not parse a command from " + str(data)
 
-    def handleShutdownRequest(self):
-        self.shutdownServer()
-        return 'Server shut down.'
-
-    def shutdownServer(self):
-        func = request.environ.get('werkzeug.server.shutdown')
-        if func is None:
-            raise RuntimeError('Not running with the Werkzeug Server')
-        func()
+class ShutdownHandler(tornado.web.RequestHandler):
+    def get(self):
+        ioloop = tornado.ioloop.IOLoop.instance()
+        ioloop.add_callback(lambda x: x.stop(), ioloop)
 
 def _worker(command_queue, info_queue):
     print "Starting up web interface worker"
-    b = Backend(command_queue, info_queue, HOST, PORT)
-    b.flask_app.run(host=b.host, port=b.port, debug=b.debug, use_reloader=False)
-    print "Web interface worker stopped."
+    application = tornado.web.Application(\
+        [(r"/", MainHandler), (r"/shutdown", ShutdownHandler)], \
+        static_path = os.path.join(static_path, 'static'))
+    application.listen(PORT)
+    tornado.ioloop.IOLoop.instance().start()
 
 def stop():
     while not command_queue.empty():
         command_queue.get()
+    
     if web_backend_process:
         import urllib2
         urllib2.urlopen('http://%s:%d/shutdown' % (HOST, PORT))
+        print "Asked Tornado to stop."
 
 def start():
     global web_backend_process

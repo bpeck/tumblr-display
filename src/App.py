@@ -10,7 +10,7 @@ from Settings import Settings
 from UI.ScreenManager import ScreenManager
 from UI.MainScreen import MainScreen
 from image import AsyncImageLoad
-from web import Backend as WebInterface
+from web import Backend
 
 SLEEP_TIME = 8
 
@@ -30,8 +30,6 @@ class App(object):
 
         self.setFullscreen(False)
 
-        WebInterface.start()
-
     def setFullscreen(self, fullscreen):
         if fullscreen == self.fullscreen:
             return
@@ -47,6 +45,8 @@ class App(object):
         self.fullscreen = fullscreen
 
         self.screen_manager.setSDLScreen(sdl_screen) 
+
+        Backend.start()
     
     def mainLoop(self):
         try:
@@ -73,7 +73,7 @@ class App(object):
 
                         AsyncImageLoad.update()
 
-                        backend_cmd = WebInterface.poll()
+                        backend_cmd = Backend.poll()
                         if backend_cmd:
                             print 'recv command from web'
                             self.app_controller.handleCommand(backend_cmd)
@@ -92,5 +92,5 @@ class App(object):
 
     def tearDown(self):
         print "Tearing down " + Settings.WINDOW_TITLE + "..."
-        WebInterface.stop()
+        Backend.stop()
         AsyncImageLoad.stop()

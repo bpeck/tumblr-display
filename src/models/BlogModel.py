@@ -1,3 +1,4 @@
+import os
 from AbstractRootModel import AbstractRootModel
 import pytumblr
 import PostModel
@@ -37,7 +38,7 @@ class BlogModel(AbstractRootModel):
         return info
 
     def getInfoTemplatePath(self):
-        return 'blogInfo.html'
+        return os.path.join('templates','blogInfo.html')
 
     def getNumPosts(self):
         return self.num_posts

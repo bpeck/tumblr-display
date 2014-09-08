@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "templates/base.html" %}
 
 {% block content %}
   <div data-role="page" id="index">
     <div data-role="header" data-id="header1" data-position="fixed">
-      <h1>PiFrame@{{ip}}:{{port}}</h1>
+      <h1>PiFrame@{{ ip }}:{{ port }}</h1>
     </div>
     <div role="main" class="ui-content">
       <div data-role="collapsibleset" data-theme="a" data-content-theme="a" data-inset="false">
@@ -140,4 +140,4 @@ $('#model-change-btn').click( function() {
   });
 });
 </script>
-{% endblock %}
+{% end %}
