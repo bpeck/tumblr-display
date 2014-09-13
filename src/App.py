@@ -17,6 +17,7 @@ SLEEP_TIME = 8
 class App(object):
     
     def __init__(self):
+        print "Icons made by Icomoon, Freepik is licensed by CC BY 3.0"
 
         self.done = False
         self.fullscreen = None
@@ -62,9 +63,9 @@ class App(object):
                         e.key == pygame.K_f:
                         self.setFullscreen(not self.fullscreen)
                     elif e.type == KEYDOWN or e.type == KEYUP:
-                        self.screen_manager.onKeyboardEvent(e)
+                        self.app_controller.handleKeyboardEvent(e)
                     elif e.type  == MOUSEMOTION or e.type  ==  MOUSEBUTTONDOWN or e.type == MOUSEBUTTONUP:
-                        self.screen_manager.onMouseEvent(e)
+                        self.app_controller.handleMouseEvent(e)
 
                 if not self.done:
                     t = get_ticks()

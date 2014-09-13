@@ -11,7 +11,7 @@ import tornado.template
 
 import web
 
-from controllers.RootModelCommands import GetInfoCommand, NextCommand, PrevCommand, SetModelRootCommand, SetModelTypeCommand
+from controllers.RootModelCommands import GetInfoCommand, NextCommand, PauseCommand, PrevCommand, SetModelRootCommand, SetModelTypeCommand
 
 HOST = 'localhost'
 PORT = 8000
@@ -24,6 +24,8 @@ def parseCommandString(http_args):
         return NextCommand()
     elif http_args['command'] == 'prev':
         return PrevCommand()
+    elif http_args['command'] == 'pause':
+        return PauseCommand()
     elif http_args['command'] == 'set_root':
         if http_args.has_key('root_path'):
             return SetModelRootCommand(http_args['root_path'])

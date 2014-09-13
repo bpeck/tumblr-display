@@ -27,6 +27,11 @@ class PrevCommand(Command):
         super(PrevCommand, self).__init__()
         self._desc = 'Prev'
 
+class PauseCommand(Command):
+    def __init__(self):
+        super(PauseCommand, self).__init__()
+        self._desc = 'Pause'
+
 class SetModelRootCommand(Command):
     def __init__(self, model_root):
         super(SetModelRootCommand, self).__init__()

@@ -11,3 +11,9 @@ class AbstractRootController(object):
     @return a dictionary of information, caller is in charge of formatting"""
     def getInfo(self):
         raise NotImplementedError()
+
+    def handleKeyboardEvent(self, e):
+        pass
+
+    def handleMouseEvent(self, e):
+        pass

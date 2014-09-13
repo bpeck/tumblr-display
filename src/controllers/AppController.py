@@ -38,6 +38,14 @@ class AppController(object):
         else:
             self.app.screen_manager.pushScreen(new_main_screen)
             self.handleCommand(GetInfoCommand())
+
+    def handleKeyboardEvent(self, e):
+        if self.controller:
+            self.controller.handleKeyboardEvent(e)
+
+    def handleMouseEvent(self, e):
+        if self.controller:
+            self.controller.handleMouseEvent(e)
             
     def handleCommand(self, command):
         # if it's a special command the app controller cares about, consume it here

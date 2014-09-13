@@ -7,6 +7,7 @@ from image import AsyncImageLoad
 class BlogView(ImageView):
     SCROLL_SPEED = 1.0
     DISPLAY_SPEED = 4.0
+    REWIND_LEN = 5
 
     def __init__(self, blogModel):
         super(BlogView, self).__init__()
@@ -23,6 +24,7 @@ class BlogView(ImageView):
         self.waiting_on_batch = None
 
         self.img_queue = []
+        self.current_img_queue_idx = 0
         self.last_cached_post_idx = self.post
 
         self.preload_posts(2)
@@ -82,21 +84,41 @@ class BlogView(ImageView):
         self.last_cached_post_idx += look_ahead + 1
 
     def preload_needed(self):
-        return not self.preload_after_prop_displays and len(self.img_queue) < 5
+        return not self.preload_after_prop_displays and len(self.img_queue) - self.current_img_queue_idx < 5
 
     def incPost(self):
         return self.setPost(self.post + 1)
 
-    def setPost(self, idx):
-        if len(self.img_queue) > 0:
-            images, w, h = self.img_queue.pop(0)
-            image_prop = ImageProp(images, w, h, self.rect.w, self.rect.h)
-            self.setImage(image_prop, BlogView.SCROLL_SPEED, BlogView.DISPLAY_SPEED)
+    def prevPost(self):
+        return self.setPost(self.post - 1)
 
-            self.post = idx
-            if self.preload_needed():
-                self.preload_after_prop_displays = image_prop
-            return True
+    def setPost(self, idx):
+        print "idx is %d, queue len is %d, curr idx is %d" % (idx, len(self.img_queue), self.current_img_queue_idx)
+        if len(self.img_queue) > 0:
+            if idx > self.post:
+                if self.current_img_queue_idx >= BlogView.REWIND_LEN:
+                    self.img_queue.pop(0)
+                self.current_img_queue_idx = min(idx, len(self.img_queue)-1, self.current_img_queue_idx + 1, BlogView.REWIND_LEN)
+            else:
+                self.current_img_queue_idx = max(self.current_img_queue_idx - 1, 0)
+            
+            print self.img_queue[0:min(6, len(self.img_queue))]
+            print "curr idx is now %d" % self.current_img_queue_idx 
+            print "   "
+            print "   "
+
+            try:
+                images, w, h = self.img_queue[self.current_img_queue_idx]
+                image_prop = ImageProp(images, w, h, self.rect.w, self.rect.h)
+                self.setImage(image_prop, BlogView.SCROLL_SPEED, BlogView.DISPLAY_SPEED)
+
+                self.post = idx
+                if self.preload_needed():
+                    self.preload_after_prop_displays = image_prop
+                return True
+            except IndexError:
+                print "Bad index! %d" % self.current_img_queue_idx
+                return False
         return False
 
     def onImagePropStateChange(self, image_prop, state):
