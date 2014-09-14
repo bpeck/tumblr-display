@@ -93,7 +93,6 @@ class BlogView(ImageView):
         return self.setPost(self.post - 1)
 
     def setPost(self, idx):
-        print "idx is %d, queue len is %d, curr idx is %d" % (idx, len(self.img_queue), self.current_img_queue_idx)
         if len(self.img_queue) > 0:
             if idx > self.post:
                 if self.current_img_queue_idx >= BlogView.REWIND_LEN:
@@ -101,11 +100,6 @@ class BlogView(ImageView):
                 self.current_img_queue_idx = min(idx, len(self.img_queue)-1, self.current_img_queue_idx + 1, BlogView.REWIND_LEN)
             else:
                 self.current_img_queue_idx = max(self.current_img_queue_idx - 1, 0)
-            
-            print self.img_queue[0:min(6, len(self.img_queue))]
-            print "curr idx is now %d" % self.current_img_queue_idx 
-            print "   "
-            print "   "
 
             try:
                 images, w, h = self.img_queue[self.current_img_queue_idx]

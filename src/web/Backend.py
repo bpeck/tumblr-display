@@ -48,7 +48,7 @@ class MainHandler(tornado.web.RequestHandler):
                 template_filename, info_context = info_queue.get(True, 5)
                 info['html'] = self.render_string(template_filename, **info_context)                    
             except Queue.Empty:
-                info['html'] = "<p><strong>Could not refresh. Please try again.</storng></p>"
+                info['html'] = "<p><strong>Could not refresh. Please try again.</strong></p>"
             finally:
                 info['success'] = True
                 info['content_type'] = 'application/json'
